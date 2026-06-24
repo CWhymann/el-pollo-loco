@@ -52,19 +52,70 @@ const IMAGES_DEAD = [
 
 export class Character extends MovableObject {
     x = 0;
-    y = 200;
+    y = 155;
     width = 120;
     height = 280;
     speed = 5;
+    otherDirection = false;
+    keyboard;
 
-    constructor() {
+    /**
+     * @param {Keyboard} keyboard - The keyboard state object.
+     */
+    constructor(keyboard) {
         super();
+        this.keyboard = keyboard;
         this.loadImage(IMAGES_IDLE[0]);
         this.loadImages(IMAGES_IDLE);
         this.loadImages(IMAGES_WALKING);
         this.loadImages(IMAGES_JUMPING);
         this.loadImages(IMAGES_HURT);
         this.loadImages(IMAGES_DEAD);
+        this.animate();
+        this.applyGravity();
+    }
+
+    /**
+     * Starts the animation and movement intervals.
+     */
+    animate() {
+        setInterval(() => this.handleMovement(), 1000 / 60);
+        setInterval(() => this.handleAnimation(), 1000 / 15);
+    }
+
+    /**
+     * Handles character movement based on keyboard input.
+     */
+    handleMovement() {
+        if (this.keyboard.RIGHT) {
+            this.x += this.speed;
+            this.otherDirection = false;
+        }
+        if (this.keyboard.LEFT) {
+            this.x -= this.speed;
+            this.otherDirection = true;
+        }
+        if (this.keyboard.SPACE && !this.isAboveGround()) {
+            this.jump();
+        }
+    }
+
+    /**
+     * Handles animation based on current movement state.
+     */
+    handleAnimation() {
+        if (this.keyboard.RIGHT || this.keyboard.LEFT) {
+            this.playAnimation(IMAGES_WALKING);
+        } else {
+            this.playAnimation(IMAGES_IDLE);
+        }
+    }
+
+    /**
+     * Makes the character jump by setting vertical speed.
+     */
+    jump() {
+        this.speedY = 30;
     }
 }
 //Was passiert hier?
@@ -76,3 +127,6 @@ export class Character extends MovableObject {
 //loadImage() -> kommt aus MovableObject – ich nutze sie direkt, ohne sie neu zu schreiben! -> setzt das erste Idle-Bild als Startbild -> → lädt alle Animations-Bilder in den Cache vor – so gibt es später keine Verzögerung beim Abspielen
 //PS.:Die Bild-Arrays stehen als Konstanten außerhalb der Klasse – sauber und übersichtlich, die Klasse selbst bleibt schlank
 //Die Klasse ist vorbereitet für alle Zustände: idle, walking, jumping, hurt, dead
+//keyboard wird als Parameter übergeben – der Character weiß so immer welche Tasten gedrückt sind
+//animate() startet zwei Intervalle – eines für die Bewegung (60fps) und eines für die Animation (15fps) – so läuft Pepe flüssig
+//handleMovement() und handleAnimation() haben jeweils nur eine Aufgabe – sauber nach Checkliste!

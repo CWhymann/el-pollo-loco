@@ -6,6 +6,8 @@ export class MovableObject {
     img;
     imageCache = {};
     currentImage = 0;
+    speedY = 0;
+    acceleration = 2.5;
 
     /**
      * Loads a single image and assigns it to this.img.
@@ -45,10 +47,35 @@ export class MovableObject {
     draw(ctx) {
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
-}
-//Was passiert hier?
 
-//imageCache -> ein Objekt das alle Bilder speichert, damit sie nicht jedes Frame neu geladen werden
-//currentImage -> Zeiger auf das aktuelle Bild in der Animation
-//loadImages() -> lädt ein ganzes Array von Bildpfaden auf einmal in den Cache
-//playAnimation() -> wechselt zum nächsten Bild – der % Operator sorgt dafür dass es nach dem letzten Bild wieder von vorne beginnt
+    /**
+     * Draws the object flipped horizontally onto the canvas.
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     */
+    drawFlipped(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width, this.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(this.img, 0, 0, this.width, this.height);
+        ctx.restore();
+    }
+    /**
+     * Applies gravity to the object on every frame.
+     */
+    applyGravity() {
+        setInterval(() => {
+            if (this.isAboveGround() || this.speedY > 0) {
+                this.y -= this.speedY;
+                this.speedY -= this.acceleration;
+            }
+        }, 1000 / 60);
+    }
+
+    /**
+     * Checks if the object is above the ground level.
+     * @returns {boolean} True if the object is above ground.
+     */
+    isAboveGround() {
+        return this.y < 155;
+    }
+}
