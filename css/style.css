@@ -1,3 +1,9 @@
+@font-face {
+    font-family: "Boogaloo";
+    src: url("../assets/fonts/Boogaloo-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 * {
     margin: 0;
     padding: 0;
