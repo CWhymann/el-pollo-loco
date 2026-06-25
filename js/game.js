@@ -1,6 +1,7 @@
 import { canvas, ctx } from "./canvas.js";
 import { Character } from "../classes/character.class.js";
 import { Keyboard } from "../classes/keyboard.class.js";
+import { World } from "../classes/world.class.js";
 
 const keyboard = new Keyboard();
 const character = new Character(keyboard);
@@ -21,24 +22,4 @@ window.addEventListener("keyup", (e) => {
     if (e.key === "d") keyboard.D = false;
 });
 
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (character.otherDirection) {
-        character.drawFlipped(ctx);
-    } else {
-        character.draw(ctx);
-    }
-    requestAnimationFrame(gameLoop);
-}
-
-requestAnimationFrame(gameLoop);
-
-// Was passiert hier?
-// clearRect() -> löscht den Canvas jeden Frame -TafelWischen- :-)
-//requestAnimationFrame() -> ruft gameLoop ungefähr60x pro sek. auf, perfekt synchronisiert mit dem Browser
-//Der Import von MovaleObjekt ist vorbereitet- ich brauche Ihn gleich
-//new Character()-> erstellt Pepe und lädt alle Bilder in den Cache
-//character.draw(ctx) -> zeichnet Pepe jeden Frame auf den Canvas
-//keydown -> setzt die Taste auf true wenn sie gedrückt wird
-//keyup -> setzt sie zurück auf false wenn sie losgelassen wird
-//So wissen wir jederzeit welche Tasten gerade gehalten werden
+const world = new World(character, canvas, ctx);
