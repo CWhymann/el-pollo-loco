@@ -17,10 +17,10 @@ const IMAGES_SPLASH = [
 ];
 
 export class ThrowableObject extends MovableObject {
-    x;
-    y;
     width = 60;
     height = 80;
+    thrown = false;
+    acceleration = 1;
 
     /**
      * Creates a throwable bottle at the given position.
@@ -34,12 +34,33 @@ export class ThrowableObject extends MovableObject {
         this.loadImage(IMAGES_ROTATION[0]);
         this.loadImages(IMAGES_ROTATION);
         this.loadImages(IMAGES_SPLASH);
+        this.throw();
+    }
+
+    /**
+     * Checks if the bottle is above the ground level.
+     * @returns {boolean} True if the bottle is above ground.
+     */
+    isAboveGround() {
+        return this.y < 360;
+    }
+
+    /**
+     * Starts the throwing animation and movement.
+     */
+    throw() {
+        this.speedY = 15;
+        this.applyGravity();
+        setInterval(() => {
+            if (!this.thrown) {
+                this.x += 10;
+                this.playAnimation(IMAGES_ROTATION);
+            } else {
+                this.playAnimation(IMAGES_SPLASH);
+            }
+            if (this.y > 360) {
+                this.thrown = true;
+            }
+        }, 1000 / 25);
     }
 }
-
-//Was passiert hier?
-
-//constructor(x, y) -> die Flasche bekommt ihre Startposition beim Erstellen – nämlich Pepes aktuelle Position wenn er wirft
-//IMAGES_ROTATION -> die Flasche dreht sich beim Fliegen
-//IMAGES_SPLASH -> wenn die Flasche trifft, spritzt sie auf
-//x und y haben keinen Standardwert – sie werden immer beim new ThrowableObject(x, y) übergeben

@@ -1,4 +1,5 @@
 import { MovableObject } from "./movable-object.class.js";
+import { ThrowableObject } from "./throwable-object.class.js";
 
 const IMAGES_IDLE = [
     "assets/img/2_character_pepe/1_idle/idle/I-1.png",
@@ -58,6 +59,8 @@ export class Character extends MovableObject {
     speed = 5;
     otherDirection = false;
     keyboard;
+    bottles = 10;
+    lastThrow = 0;
 
     /**
      * @param {Keyboard} keyboard - The keyboard state object.
@@ -98,13 +101,22 @@ export class Character extends MovableObject {
         if (this.keyboard.SPACE && !this.isAboveGround()) {
             this.jump();
         }
+        if (this.keyboard.D && this.bottles > 0 && this.canThrow()) {
+            this.throwBottle();
+        }
     }
 
     /**
      * Handles animation based on current movement state.
      */
     handleAnimation() {
-        if (this.keyboard.RIGHT || this.keyboard.LEFT) {
+        if (this.isDead()) {
+            this.playAnimation(IMAGES_DEAD);
+        } else if (this.isHurt()) {
+            this.playAnimation(IMAGES_HURT);
+        } else if (this.isAboveGround()) {
+            this.playAnimation(IMAGES_JUMPING);
+        } else if (this.keyboard.RIGHT || this.keyboard.LEFT) {
             this.playAnimation(IMAGES_WALKING);
         } else {
             this.playAnimation(IMAGES_IDLE);
@@ -116,6 +128,25 @@ export class Character extends MovableObject {
      */
     jump() {
         this.speedY = 30;
+    }
+
+    /**
+     * Throws a bottle in the current direction.
+     */
+    throwBottle() {
+        this.lastThrow = new Date().getTime();
+        this.bottles--;
+        const bottle = new ThrowableObject(this.x + 100, this.y + 100);
+        this.world.throwableObjects.push(bottle);
+    }
+
+    /**
+     * Checks if enough time has passed to throw another bottle.
+     * @returns {boolean} True if the character can throw.
+     */
+    canThrow() {
+        const timePassed = new Date().getTime() - this.lastThrow;
+        return timePassed > 500;
     }
 }
 //Was passiert hier?

@@ -4,6 +4,7 @@ import { ChickenSmall } from "../classes/chicken-small.class.js";
 import { Endboss } from "../classes/endboss.class.js";
 import { Coin } from "../classes/coin.class.js";
 import { Bottle } from "../classes/bottle.class.js";
+import { Cloud } from "../classes/cloud.class.js";
 
 export const level1 = {
     enemies: [
@@ -29,6 +30,8 @@ export const level1 = {
         new Bottle(1100, 380),
         new Bottle(1400, 380),
     ],
+
+    clouds: [new Cloud(0), new Cloud(720), new Cloud(1440), new Cloud(2160)],
 
     backgroundObjects: [
         new BackgroundObject(

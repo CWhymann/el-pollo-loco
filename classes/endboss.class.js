@@ -46,7 +46,8 @@ export class Endboss extends MovableObject {
     y = 50;
     width = 250;
     height = 400;
-    speed = 0.3;
+    speed = 0.8;
+    hadFirstContact = false;
 
     constructor() {
         super();
@@ -56,13 +57,38 @@ export class Endboss extends MovableObject {
         this.loadImages(IMAGES_ATTACK);
         this.loadImages(IMAGES_HURT);
         this.loadImages(IMAGES_DEAD);
+        this.animate();
+    }
+
+    /**
+     * Starts the movement and animation intervals.
+     */
+    animate() {
+        setInterval(() => this.handleMovement(), 1000 / 60);
+        setInterval(() => this.handleAnimation(), 1000 / 8);
+    }
+
+    /**
+     * Moves the endboss towards the character after first contact.
+     */
+    handleMovement() {
+        if (this.hadFirstContact && !this.isDead()) {
+            this.x -= this.speed;
+        }
+    }
+
+    /**
+     * Handles animation based on current state.
+     */
+    handleAnimation() {
+        if (this.isDead()) {
+            this.playAnimation(IMAGES_DEAD);
+        } else if (this.isHurt()) {
+            this.playAnimation(IMAGES_HURT);
+        } else if (this.hadFirstContact) {
+            this.playAnimation(IMAGES_ATTACK);
+        } else {
+            this.playAnimation(IMAGES_ALERT);
+        }
     }
 }
-
-//Was passiert hier?
-
-//x = 2200 → der Endboss wartet weit rechts am Ende des Levels
-//y = 50 → er ist groß, deshalb startet er weiter oben
-//width = 250, height = 400 → deutlich größer als normale Gegner
-//speed = 0.3 → langsam aber mächtig
-//Er hat 5 Animationszustände – walk, alert, attack, hurt, dead – der komplexeste Gegner im Spiel!

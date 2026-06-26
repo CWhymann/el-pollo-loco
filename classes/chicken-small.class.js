@@ -11,21 +11,45 @@ const IMAGES_DEAD = [
 ];
 
 export class ChickenSmall extends MovableObject {
-    x = 700;
+    x = 700 + Math.random() * 500;
     y = 380;
     width = 50;
     height = 60;
-    speed = 0.8;
+    speed = 0.3 + Math.random() * 0.5;
 
     constructor() {
         super();
         this.loadImage(IMAGES_WALKING[0]);
         this.loadImages(IMAGES_WALKING);
         this.loadImages(IMAGES_DEAD);
+        this.animate();
+    }
+
+    /**
+     * Starts the movement and animation intervals.
+     */
+    animate() {
+        setInterval(() => this.handleMovement(), 1000 / 60);
+        setInterval(() => this.handleAnimation(), 1000 / 10);
+    }
+
+    /**
+     * Moves the chicken to the left.
+     */
+    handleMovement() {
+        if (!this.isDead()) {
+            this.x -= this.speed;
+        }
+    }
+
+    /**
+     * Handles animation based on current state.
+     */
+    handleAnimation() {
+        if (this.isDead()) {
+            this.playAnimation(IMAGES_DEAD);
+        } else {
+            this.playAnimation(IMAGES_WALKING);
+        }
     }
 }
-
-//Was passiert hier?
-
-//ChickenSmall ist kleiner und schneller als die normale Chicken – speed = 0.8
-//Beide Chicken Klassen folgen exakt dem gleichen Muster wie Character

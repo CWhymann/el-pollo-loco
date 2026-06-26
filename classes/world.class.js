@@ -1,4 +1,6 @@
 import { level1 } from "../levels/level1.js";
+import { StatusBar } from "../classes/status-bar.class.js";
+import { Endboss } from "../classes/endboss.class.js";
 
 export class World {
     character;
@@ -6,6 +8,8 @@ export class World {
     canvas;
     ctx;
     camera_x = 0;
+    throwableObjects = [];
+    healthBar = new StatusBar(10, 10);
 
     /**
      * Creates the game world.
@@ -17,6 +21,7 @@ export class World {
         this.character = character;
         this.canvas = canvas;
         this.ctx = ctx;
+        this.character.world = this;
         this.draw();
     }
 
@@ -26,13 +31,24 @@ export class World {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.updateCamera();
+        this.checkCollisions();
+        this.checkCoinCollisions();
+        this.checkBottleCollisions();
+        this.checkThrowableCollisions();
+        this.checkEndbossContact();
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
+        this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.level.coins);
         this.addObjectsToMap(this.level.bottles);
+        this.throwableObjects = this.throwableObjects.filter(
+            (bottle) => !bottle.thrown || bottle.currentImage < 6,
+        );
+        this.addObjectsToMap(this.throwableObjects);
         this.addToMap(this.character);
         this.ctx.translate(-this.camera_x, 0);
+        this.addToMap(this.healthBar);
         requestAnimationFrame(() => this.draw());
     }
 
@@ -41,6 +57,64 @@ export class World {
      */
     updateCamera() {
         this.camera_x = -this.character.x + 100;
+    }
+
+    /**
+     * Checks for collisions between character and enemies.
+     */
+    checkCollisions() {
+        this.level.enemies.forEach((enemy) => {
+            if (this.character.isColliding(enemy)) {
+                this.character.hit();
+                this.healthBar.setPercentage(this.character.energy);
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between character and coins.
+     */
+    checkCoinCollisions() {
+        this.level.coins.forEach((coin, index) => {
+            if (this.character.isColliding(coin)) {
+                this.level.coins.splice(index, 1);
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between character and bottles.
+     */
+    checkBottleCollisions() {
+        this.level.bottles.forEach((bottle, index) => {
+            if (this.character.isColliding(bottle)) {
+                this.level.bottles.splice(index, 1);
+            }
+        });
+    }
+
+    /**
+     * Checks for collisions between thrown bottles and enemies.
+     */
+    checkThrowableCollisions() {
+        this.throwableObjects.forEach((bottle) => {
+            this.level.enemies.forEach((enemy) => {
+                if (bottle.isColliding(enemy) && !bottle.thrown) {
+                    bottle.thrown = true;
+                    enemy.hit();
+                }
+            });
+        });
+    }
+
+    /**
+     * Checks if the character is close to the endboss.
+     */
+    checkEndbossContact() {
+        const endboss = this.level.enemies.find((e) => e instanceof Endboss);
+        if (endboss && this.character.x > 1800) {
+            endboss.hadFirstContact = true;
+        }
     }
 
     /**

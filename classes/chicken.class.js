@@ -11,23 +11,45 @@ const IMAGES_DEAD = [
 ];
 
 export class Chicken extends MovableObject {
-    x = 700;
+    x = 700 + Math.random() * 500;
     y = 360;
     width = 70;
     height = 80;
-    speed = 0.5;
+    speed = 0.15 + Math.random() * 0.5;
 
     constructor() {
         super();
         this.loadImage(IMAGES_WALKING[0]);
         this.loadImages(IMAGES_WALKING);
         this.loadImages(IMAGES_DEAD);
+        this.animate();
+    }
+
+    /**
+     * Starts the movement and animation intervals.
+     */
+    animate() {
+        setInterval(() => this.handleMovement(), 1000 / 60);
+        setInterval(() => this.handleAnimation(), 1000 / 8);
+    }
+
+    /**
+     * Moves the chicken to the left.
+     */
+    handleMovement() {
+        if (!this.isDead()) {
+            this.x -= this.speed;
+        }
+    }
+
+    /**
+     * Handles animation based on current state.
+     */
+    handleAnimation() {
+        if (this.isDead()) {
+            this.playAnimation(IMAGES_DEAD);
+        } else {
+            this.playAnimation(IMAGES_WALKING);
+        }
     }
 }
-
-//Was pasiert hier?
-
-//extends MovableObject -> Chicken erbt alles von der Basisklasse – genau wie Character
-//x = 700 -> Chicken startet rechts außerhalb des sichtbaren Bereichs
-//speed = 0.5 -> Chicken läuft langsamer als Pepe
-//Die Dead-Animation hat nur ein Bild - das reicht für den Todesmoment
