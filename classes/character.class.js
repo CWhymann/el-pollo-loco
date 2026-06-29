@@ -59,7 +59,8 @@ export class Character extends MovableObject {
     speed = 5;
     otherDirection = false;
     keyboard;
-    bottles = 10;
+    bottles = 0;
+    coins = 0;
     lastThrow = 0;
 
     /**

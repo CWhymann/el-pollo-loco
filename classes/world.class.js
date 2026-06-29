@@ -1,6 +1,10 @@
 import { level1 } from "../levels/level1.js";
 import { StatusBar } from "../classes/status-bar.class.js";
 import { Endboss } from "../classes/endboss.class.js";
+import { StartScreen } from "../classes/start-screen.class.js";
+import { GameOverScreen } from "../classes/game-over-screen.class.js";
+import { WinScreen } from "../classes/win-screen.class.js";
+import { AudioManager } from "../classes/audio-manager.class.js";
 
 export class World {
     character;
@@ -9,7 +13,16 @@ export class World {
     ctx;
     camera_x = 0;
     throwableObjects = [];
-    healthBar = new StatusBar(10, 10);
+    healthBar = new StatusBar(10, 10, "health");
+    bottleBar = new StatusBar(10, 60, "bottle");
+    coinBar = new StatusBar(10, 110, "coin");
+    gameStarted = false;
+    startScreen = new StartScreen();
+    gameOver = false;
+    gameOverScreen = new GameOverScreen();
+    gameWon = false;
+    winScreen = new WinScreen();
+    audioManager = new AudioManager();
 
     /**
      * Creates the game world.
@@ -22,6 +35,12 @@ export class World {
         this.canvas = canvas;
         this.ctx = ctx;
         this.character.world = this;
+        this.audioManager.loadMuteState();
+        const startButton = document.getElementById("start-button");
+        startButton.addEventListener("click", () => {
+            this.gameStarted = true;
+            document.getElementById("start-screen").remove();
+        });
         this.draw();
     }
 
@@ -30,12 +49,29 @@ export class World {
      */
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if (!this.gameStarted) {
+            this.addToMap(this.startScreen);
+            requestAnimationFrame(() => this.draw());
+            return;
+        }
+        if (this.gameOver) {
+            this.addToMap(this.gameOverScreen);
+            requestAnimationFrame(() => this.draw());
+            return;
+        }
+        if (this.gameWon) {
+            this.addToMap(this.winScreen);
+            requestAnimationFrame(() => this.draw());
+            return;
+        }
         this.updateCamera();
         this.checkCollisions();
         this.checkCoinCollisions();
         this.checkBottleCollisions();
         this.checkThrowableCollisions();
         this.checkEndbossContact();
+        this.removeDeadEnemies();
+        this.checkWinCondition();
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
         this.addObjectsToMap(this.level.clouds);
@@ -50,6 +86,8 @@ export class World {
         this.ctx.translate(-this.camera_x, 0);
         this.addToMap(this.healthBar);
         requestAnimationFrame(() => this.draw());
+        this.addToMap(this.bottleBar);
+        this.addToMap(this.coinBar);
     }
 
     /**
@@ -65,10 +103,30 @@ export class World {
     checkCollisions() {
         this.level.enemies.forEach((enemy) => {
             if (this.character.isColliding(enemy)) {
-                this.character.hit();
-                this.healthBar.setPercentage(this.character.energy);
+                if (
+                    !(enemy instanceof Endboss) &&
+                    this.character.isAboveGround() &&
+                    this.character.speedY < 0
+                ) {
+                    enemy.hit();
+                } else if (!this.character.isHurt()) {
+                    this.character.hit();
+                    this.healthBar.setPercentage(this.character.energy);
+                }
             }
         });
+        if (this.character.isDead()) {
+            this.gameOver = true;
+        }
+    }
+
+    /**
+     * Removes dead enemies from the level.
+     */
+    removeDeadEnemies() {
+        this.level.enemies = this.level.enemies.filter(
+            (enemy) => !enemy.isDead(),
+        );
     }
 
     /**
@@ -78,10 +136,11 @@ export class World {
         this.level.coins.forEach((coin, index) => {
             if (this.character.isColliding(coin)) {
                 this.level.coins.splice(index, 1);
+                this.character.coins++;
+                this.coinBar.setPercentage(this.character.coins * 10);
             }
         });
     }
-
     /**
      * Checks for collisions between character and bottles.
      */
@@ -89,6 +148,8 @@ export class World {
         this.level.bottles.forEach((bottle, index) => {
             if (this.character.isColliding(bottle)) {
                 this.level.bottles.splice(index, 1);
+                this.character.bottles++;
+                this.bottleBar.setPercentage(this.character.bottles * 20);
             }
         });
     }
@@ -114,6 +175,16 @@ export class World {
         const endboss = this.level.enemies.find((e) => e instanceof Endboss);
         if (endboss && this.character.x > 1800) {
             endboss.hadFirstContact = true;
+        }
+    }
+
+    /**
+     * Checks if the endboss is dead and sets gameWon to true.
+     */
+    checkWinCondition() {
+        const endboss = this.level.enemies.find((e) => e instanceof Endboss);
+        if (endboss && endboss.isDead()) {
+            this.gameWon = true;
         }
     }
 
