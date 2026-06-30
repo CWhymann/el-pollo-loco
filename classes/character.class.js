@@ -1,6 +1,19 @@
 import { MovableObject } from "./movable-object.class.js";
 import { ThrowableObject } from "./throwable-object.class.js";
 
+const IMAGES_LONG_IDLE = [
+    "assets/img/2_character_pepe/1_idle/long_idle/I-11.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-12.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-13.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-14.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-15.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-16.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-17.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-18.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-19.png",
+    "assets/img/2_character_pepe/1_idle/long_idle/I-20.png",
+];
+
 const IMAGES_IDLE = [
     "assets/img/2_character_pepe/1_idle/idle/I-1.png",
     "assets/img/2_character_pepe/1_idle/idle/I-2.png",
@@ -62,6 +75,7 @@ export class Character extends MovableObject {
     bottles = 0;
     coins = 0;
     lastThrow = 0;
+    lastMove = new Date().getTime();
 
     /**
      * @param {Keyboard} keyboard - The keyboard state object.
@@ -75,6 +89,7 @@ export class Character extends MovableObject {
         this.loadImages(IMAGES_JUMPING);
         this.loadImages(IMAGES_HURT);
         this.loadImages(IMAGES_DEAD);
+        this.loadImages(IMAGES_LONG_IDLE);
         this.animate();
         this.applyGravity();
     }
@@ -94,10 +109,12 @@ export class Character extends MovableObject {
         if (this.keyboard.RIGHT) {
             this.x += this.speed;
             this.otherDirection = false;
+            this.lastMove = new Date().getTime();
         }
         if (this.keyboard.LEFT) {
             this.x -= this.speed;
             this.otherDirection = true;
+            this.lastMove = new Date().getTime();
         }
         if (this.keyboard.SPACE && !this.isAboveGround()) {
             this.jump();
@@ -119,6 +136,8 @@ export class Character extends MovableObject {
             this.playAnimation(IMAGES_JUMPING);
         } else if (this.keyboard.RIGHT || this.keyboard.LEFT) {
             this.playAnimation(IMAGES_WALKING);
+        } else if (new Date().getTime() - this.lastMove > 8000) {
+            this.playAnimation(IMAGES_LONG_IDLE);
         } else {
             this.playAnimation(IMAGES_IDLE);
         }
@@ -137,6 +156,7 @@ export class Character extends MovableObject {
     throwBottle() {
         this.lastThrow = new Date().getTime();
         this.bottles--;
+        this.world.bottleBar.setPercentage(this.bottles * 20);
         const bottle = new ThrowableObject(this.x + 100, this.y + 100);
         this.world.throwableObjects.push(bottle);
     }

@@ -11,14 +11,27 @@ const IMAGES_DEAD = [
 ];
 
 export class Chicken extends MovableObject {
-    x = 700 + Math.random() * 500;
+    x = 700;
     y = 360;
     width = 70;
     height = 80;
     speed = 0.15 + Math.random() * 0.5;
+    energy = 5;
+    /**
+     * Reduces energy and marks the chicken as dying.
+     */
+    hit() {
+        this.energy = 0;
+        this.isDying = true;
+        setTimeout(() => {
+            this.markedForDeletion = true;
+        }, 500);
+    }
+    isDying = false;
 
-    constructor() {
+    constructor(x) {
         super();
+        this.x = x;
         this.loadImage(IMAGES_WALKING[0]);
         this.loadImages(IMAGES_WALKING);
         this.loadImages(IMAGES_DEAD);
@@ -46,7 +59,7 @@ export class Chicken extends MovableObject {
      * Handles animation based on current state.
      */
     handleAnimation() {
-        if (this.isDead()) {
+        if (this.isDying) {
             this.playAnimation(IMAGES_DEAD);
         } else {
             this.playAnimation(IMAGES_WALKING);

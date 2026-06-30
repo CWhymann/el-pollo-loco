@@ -9,10 +9,69 @@
         <script type="module" src="js/game.js" defer></script>
     </head>
     <body>
+        <header class="game-header">
+            <div class="salsa-container">
+                <img
+                    src="./assets/img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png"
+                    class="salza-bottle-icon"
+                    alt="Salsa-Bottle"
+                />
+                <img
+                    src="assets/icons/blood-drop.png"
+                    class="blood-icon bottle-drop"
+                />
+            </div>
+
+            <h1 id="game-title">
+                E<span class="drip"
+                    >l<img src="assets/icons/blood-drop.png" class="blood-icon"
+                /></span>
+                Po<span class="drip"
+                    >l<img src="assets/icons/blood-drop.png" class="blood-icon"
+                /></span>
+                <span class="drip"
+                    >l<img
+                        src="assets/icons/blood-drop.png"
+                        class="blood-icon" /></span
+                >o
+                <span class="drip"
+                    >L<img
+                        src="assets/icons/blood-drop.png"
+                        class="blood-icon" /></span
+                >oco
+            </h1>
+        </header>
+
         <div id="game-container">
             <canvas id="canvas"></canvas>
+            <img
+                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png"
+                class="canvas-splash splash-1"
+            />
+            <img
+                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png"
+                class="canvas-splash splash-2"
+            />
+            <img
+                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/4_bottle_splash.png"
+                class="canvas-splash splash-3"
+            />
             <div id="start-screen">
-                <button id="start-button">Play</button>
+                <button id="start-button" class="splash-button splash-play">
+                    Play
+                </button>
+                <button
+                    id="controls-button"
+                    class="splash-button splash-secondary"
+                >
+                    <span class="btn-text">Controls</span>
+                </button>
+                <button
+                    id="imprint-button"
+                    class="splash-button splash-secondary"
+                >
+                    <span class="btn-text">Index</span>
+                </button>
             </div>
             <div id="ui-buttons">
                 <button id="mute-button">🔊</button>

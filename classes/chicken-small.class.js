@@ -11,20 +11,25 @@ const IMAGES_DEAD = [
 ];
 
 export class ChickenSmall extends MovableObject {
-    x = 700 + Math.random() * 500;
+    x = 700;
     y = 380;
     width = 50;
     height = 60;
     speed = 0.3 + Math.random() * 0.5;
+    energy = 50;
+    isKnockedOut = false;
+    knockedOutTime = 0;
+    knockedOutDuration = 2500;
 
-    constructor() {
+    constructor(x) {
         super();
+        this.x = x;
         this.loadImage(IMAGES_WALKING[0]);
         this.loadImages(IMAGES_WALKING);
         this.loadImages(IMAGES_DEAD);
         this.animate();
     }
-
+    
     /**
      * Starts the movement and animation intervals.
      */
@@ -37,8 +42,17 @@ export class ChickenSmall extends MovableObject {
      * Moves the chicken to the left.
      */
     handleMovement() {
-        if (!this.isDead()) {
+        if (this.isKnockedOut) {
+            const timePassed = new Date().getTime() - this.knockedOutTime;
+            if (timePassed > this.knockedOutDuration) {
+                this.isKnockedOut = false;
+            } else {
+                this.x -= this.speed * 0.3;
+                this.x += Math.sin(timePassed / 150) * 2;
+            }
+        } else {
             this.x -= this.speed;
+            this.y = 380;
         }
     }
 
@@ -46,8 +60,8 @@ export class ChickenSmall extends MovableObject {
      * Handles animation based on current state.
      */
     handleAnimation() {
-        if (this.isDead()) {
-            this.playAnimation(IMAGES_DEAD);
+        if (this.isKnockedOut) {
+            this.playAnimation(IMAGES_WALKING);
         } else {
             this.playAnimation(IMAGES_WALKING);
         }

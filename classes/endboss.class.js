@@ -47,7 +47,9 @@ export class Endboss extends MovableObject {
     width = 250;
     height = 400;
     speed = 0.8;
+    energy = 20;
     hadFirstContact = false;
+    isDying = false;
 
     constructor() {
         super();
@@ -81,9 +83,15 @@ export class Endboss extends MovableObject {
      * Handles animation based on current state.
      */
     handleAnimation() {
-        if (this.isDead()) {
+        if (this.isDying) {
             this.playAnimation(IMAGES_DEAD);
-        } else if (this.isHurt()) {
+        } else if (this.isDead() && !this.isDying) {
+            this.isDying = true;
+            setTimeout(() => {
+                this.markedForDeletion = true;
+                this.world.gameWon = true;
+            }, 3000);
+        } else if (!this.isDead() && this.isHurt()) {
             this.playAnimation(IMAGES_HURT);
         } else if (this.hadFirstContact) {
             this.playAnimation(IMAGES_ATTACK);
