@@ -6,13 +6,12 @@
         <title>El Pollo Loco</title>
         <link rel="icon" href="./assets/icons/Huhn.svg" />
         <link rel="stylesheet" href="css/reset.css" />
-<link rel="stylesheet" href="css/fonts.css" />
-<link rel="stylesheet" href="css/style.css" />
-<link rel="stylesheet" href="css/mobile.css" />
+        <link rel="stylesheet" href="css/fonts.css" />
+        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/mobile.css" />
         <script type="module" src="js/game.js" defer></script>
     </head>
     <body>
-        <!-- Header mit Titel und Salsa-Dekoration -->
         <header class="game-header">
             <div class="salsa-container">
                 <img
@@ -53,11 +52,8 @@
             </h1>
         </header>
 
-        <!-- Spielbereich -->
         <div id="game-container">
             <canvas id="canvas"></canvas>
-
-            <!-- Salsa Splash Dekorationen am Canvas-Rand -->
             <img
                 src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png"
                 class="canvas-splash splash-1"
@@ -74,7 +70,6 @@
                 alt=""
             />
 
-            <!-- Startscreen Buttons -->
             <div id="start-screen">
                 <button
                     id="start-button"
@@ -99,21 +94,45 @@
                 </button>
             </div>
 
-            <!-- UI Buttons -->
+            <div
+                id="game-ui"
+                style="
+                    display: none;
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    gap: 10px;
+                    z-index: 100;
+                "
+            >
+                <button
+                    id="restart-button"
+                    class="splash-button"
+                    aria-label="Neustart"
+                >
+                    🔄 Restart
+                </button>
+                <button
+                    id="back-to-start-button"
+                    class="splash-button"
+                    aria-label="Zurück zum Start"
+                >
+                    🏠 Back to Start
+                </button>
+            </div>
+
             <div id="ui-buttons">
                 <button id="mute-button" aria-label="Sound ein/aus">🔊</button>
                 <button id="fullscreen-button" aria-label="Vollbild">⛶</button>
             </div>
 
-            <!-- Mobile Steuerung -->
             <div id="mobile-controls">
                 <button id="btn-left" aria-label="Links">◀</button>
                 <button id="btn-jump" aria-label="Springen">▲</button>
                 <button id="btn-right" aria-label="Rechts">▶</button>
                 <button id="btn-throw" aria-label="Werfen">🍶</button>
             </div>
-
-            <!-- Rotationshinweis für Mobile -->
+            
             <div id="rotate-screen">
                 <p>🔄 Please rotate your device to play!</p>
             </div>

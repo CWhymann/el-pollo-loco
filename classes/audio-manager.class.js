@@ -1,9 +1,15 @@
+/**
+ * Manages all game audio, including sound effects and mute state.
+ */
+// #region class AudioManager
 export class AudioManager {
+    // #region Properties
     sounds = {};
     isMuted = false;
+    // #endregion
 
+    // #region Loading
     /**
-     * Loads a sound file and stores it under the given key.
      * @param {string} key - The identifier for the sound.
      * @param {string} path - The path to the audio file.
      * @param {boolean} loop - Whether the sound should loop.
@@ -13,9 +19,10 @@ export class AudioManager {
         audio.loop = loop;
         this.sounds[key] = audio;
     }
+    // #endregion
 
+    // #region Playback
     /**
-     * Plays a sound by key.
      * @param {string} key - The identifier for the sound.
      */
     play(key) {
@@ -26,7 +33,6 @@ export class AudioManager {
     }
 
     /**
-     * Stops a sound by key.
      * @param {string} key - The identifier for the sound.
      */
     stop(key) {
@@ -35,10 +41,10 @@ export class AudioManager {
             this.sounds[key].currentTime = 0;
         }
     }
+    // #endregion
 
-    /**
-     * Toggles mute for all sounds.
-     */
+    // #region Mute Logic
+    /** Toggles mute for all sounds. */
     toggleMute() {
         this.isMuted = !this.isMuted;
         Object.values(this.sounds).forEach((sound) => {
@@ -47,13 +53,13 @@ export class AudioManager {
         localStorage.setItem("muted", this.isMuted);
     }
 
-    /**
-     * Loads the mute state from local storage.
-     */
+    /** Loads the mute state from local storage. */
     loadMuteState() {
         this.isMuted = localStorage.getItem("muted") === "true";
         Object.values(this.sounds).forEach((sound) => {
             sound.muted = this.isMuted;
         });
     }
+    // #endregion
 }
+// #endregion class AudioManager

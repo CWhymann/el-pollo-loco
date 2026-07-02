@@ -1,4 +1,5 @@
 import { MovableObject } from "./movable-object.class.js";
+import { IntervalHub } from "./interval-hub.class.js";
 
 const IMAGES_WALKING = [
     "assets/img/4_enemie_boss_chicken/1_walk/G1.png",
@@ -41,7 +42,12 @@ const IMAGES_DEAD = [
     "assets/img/4_enemie_boss_chicken/5_dead/G26.png",
 ];
 
+/**
+ * Represents the final boss (El Pollo Loco).
+ */
+// #region class Endboss
 export class Endboss extends MovableObject {
+    // #region Properties
     x = 2200;
     y = 50;
     width = 250;
@@ -50,7 +56,12 @@ export class Endboss extends MovableObject {
     energy = 20;
     hadFirstContact = false;
     isDying = false;
+    moveIntervalId = null;
+    animIntervalId = null;
+    deleteTimeoutId = null;
+    // #endregion
 
+    // #region Constructor
     constructor() {
         super();
         this.loadImage(IMAGES_WALKING[0]);
@@ -61,35 +72,39 @@ export class Endboss extends MovableObject {
         this.loadImages(IMAGES_DEAD);
         this.animate();
     }
+    // #endregion
 
-    /**
-     * Starts the movement and animation intervals.
-     */
+    // #region Logic
+    /** Starts movement and animation via IntervalHub. */
     animate() {
-        setInterval(() => this.handleMovement(), 1000 / 60);
-        setInterval(() => this.handleAnimation(), 1000 / 8);
+        this.moveIntervalId = IntervalHub.startInterval(
+            () => this.handleMovement(),
+            1000 / 60,
+        );
+        this.animIntervalId = IntervalHub.startInterval(
+            () => this.handleAnimation(),
+            1000 / 8,
+        );
     }
 
-    /**
-     * Moves the endboss towards the character after first contact.
-     */
+    /** Moves the boss towards the character after first contact. */
     handleMovement() {
         if (this.hadFirstContact && !this.isDead()) {
             this.x -= this.speed;
         }
     }
 
-    /**
-     * Handles animation based on current state.
-     */
+    /** Handles animation and death logic. */
     handleAnimation() {
         if (this.isDying) {
             this.playAnimation(IMAGES_DEAD);
         } else if (this.isDead() && !this.isDying) {
             this.isDying = true;
-            setTimeout(() => {
+            // Timeout über IntervalHub statt setTimeout für sauberes Stoppen
+            this.deleteTimeoutId = IntervalHub.startInterval(() => {
                 this.markedForDeletion = true;
-                this.world.gameWon = true;
+                if (this.world) this.world.gameWon = true;
+                this.stop(); // Sich selbst stoppen nach dem Sieg
             }, 3000);
         } else if (!this.isDead() && this.isHurt()) {
             this.playAnimation(IMAGES_HURT);
@@ -99,4 +114,14 @@ export class Endboss extends MovableObject {
             this.playAnimation(IMAGES_ALERT);
         }
     }
+
+    /** Stops all intervals and timeouts for the boss. */
+    stop() {
+        if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
+        if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);
+        if (this.deleteTimeoutId)
+            IntervalHub.stopInterval(this.deleteTimeoutId);
+    }
+    // #endregion
 }
+// #endregion class Endboss

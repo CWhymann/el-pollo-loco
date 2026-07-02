@@ -1,5 +1,7 @@
 import { MovableObject } from "./movable-object.class.js";
-
+/**
+ * Represents the win screen overlay.
+ */
 export class WinScreen extends MovableObject {
     width = 720;
     height = 480;

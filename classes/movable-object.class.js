@@ -1,4 +1,12 @@
+import { IntervalHub } from "./interval-hub.class.js";
+
+/**
+ * Base class for all movable objects in the game.
+ * Handles physics, drawing, collision detection and image loading.
+ */
+// #region class MovableObject
 export class MovableObject {
+    // #region Properties
     x;
     y;
     width;
@@ -8,7 +16,13 @@ export class MovableObject {
     currentImage = 0;
     speedY = 0;
     acceleration = 2.5;
+    energy = 100;
+    lastHit = 0;
+    /** @type {number|null} Speichert die ID des Gravitations-Intervalls */
+    gravityIntervalId = null;
+    // #endregion
 
+    // #region Image Loading
     /**
      * Loads a single image and assigns it to this.img.
      * @param {string} path - The path to the image file.
@@ -29,7 +43,9 @@ export class MovableObject {
             this.imageCache[path] = img;
         });
     }
+    // #endregion
 
+    // #region Animation
     /**
      * Plays the next frame of an animation.
      * @param {string[]} images - Array of image paths for the animation.
@@ -39,7 +55,9 @@ export class MovableObject {
         this.img = this.imageCache[images[index]];
         this.currentImage++;
     }
+    // #endregion
 
+    // #region Drawing
     /**
      * Draws the object onto the canvas.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
@@ -59,7 +77,9 @@ export class MovableObject {
         ctx.drawImage(this.img, 0, 0, this.width, this.height);
         ctx.restore();
     }
+    // #endregion
 
+    // #region Collision & Health
     /**
      * Checks if this object is colliding with another object.
      * @param {MovableObject} mo - The object to check collision with.
@@ -73,9 +93,6 @@ export class MovableObject {
             this.y + 10 < mo.y + mo.height
         );
     }
-
-    energy = 100;
-    lastHit = 0;
 
     /**
      * Reduces energy when the object is hit.
@@ -104,17 +121,32 @@ export class MovableObject {
     isDead() {
         return this.energy === 0;
     }
+    // #endregion
 
+    // #region Physics
     /**
-     * Applies gravity to the object on every frame.
+     * Applies gravity to the object on every frame using IntervalHub.
+     * Stores the interval ID for later cleanup.
      */
     applyGravity() {
-        setInterval(() => {
+        // ID speichern, um das Intervall später einzeln stoppen zu können
+        this.gravityIntervalId = IntervalHub.startInterval(() => {
             if (this.isAboveGround() || this.speedY > 0) {
                 this.y -= this.speedY;
                 this.speedY -= this.acceleration;
             }
         }, 1000 / 60);
+    }
+
+    /**
+     * Stops the gravity interval for this specific object.
+     * Should be called when the object is removed or the game resets.
+     */
+    stopGravity() {
+        if (this.gravityIntervalId) {
+            IntervalHub.stopInterval(this.gravityIntervalId);
+            this.gravityIntervalId = null;
+        }
     }
 
     /**
@@ -124,4 +156,6 @@ export class MovableObject {
     isAboveGround() {
         return this.y < 155;
     }
+    // #endregion
 }
+// #endregion class MovableObject

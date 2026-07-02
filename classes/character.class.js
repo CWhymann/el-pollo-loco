@@ -1,6 +1,8 @@
 import { MovableObject } from "./movable-object.class.js";
 import { ThrowableObject } from "./throwable-object.class.js";
+import { IntervalHub } from "./interval-hub.class.js";
 
+// #region Image Constants
 const IMAGES_LONG_IDLE = [
     "assets/img/2_character_pepe/1_idle/long_idle/I-11.png",
     "assets/img/2_character_pepe/1_idle/long_idle/I-12.png",
@@ -63,8 +65,15 @@ const IMAGES_DEAD = [
     "assets/img/2_character_pepe/5_dead/D-56.png",
     "assets/img/2_character_pepe/5_dead/D-57.png",
 ];
-
+// #endregion
+/**
+ * Represents the player character Pepe.
+ * Extends MovableObject with keyboard-controlled movement,
+ * animations and bottle throwing.
+ */
+// #region class Character
 export class Character extends MovableObject {
+    // #region Properties
     x = 0;
     y = 155;
     width = 120;
@@ -76,7 +85,9 @@ export class Character extends MovableObject {
     coins = 0;
     lastThrow = 0;
     lastMove = new Date().getTime();
+    // #endregion
 
+    // #region Constructor
     /**
      * @param {Keyboard} keyboard - The keyboard state object.
      */
@@ -93,13 +104,15 @@ export class Character extends MovableObject {
         this.animate();
         this.applyGravity();
     }
+    // #endregion
 
+    // #region Animation & Movement
     /**
      * Starts the animation and movement intervals.
      */
     animate() {
-        setInterval(() => this.handleMovement(), 1000 / 60);
-        setInterval(() => this.handleAnimation(), 1000 / 15);
+        IntervalHub.startInterval(() => this.handleMovement(), 1000 / 60);
+        IntervalHub.startInterval(() => this.handleAnimation(), 1000 / 15);
     }
 
     /**
@@ -116,12 +129,9 @@ export class Character extends MovableObject {
             this.otherDirection = true;
             this.lastMove = new Date().getTime();
         }
-        if (this.keyboard.SPACE && !this.isAboveGround()) {
-            this.jump();
-        }
-        if (this.keyboard.D && this.bottles > 0 && this.canThrow()) {
+        if (this.keyboard.SPACE && !this.isAboveGround()) this.jump();
+        if (this.keyboard.D && this.bottles > 0 && this.canThrow())
             this.throwBottle();
-        }
     }
 
     /**
@@ -142,7 +152,9 @@ export class Character extends MovableObject {
             this.playAnimation(IMAGES_IDLE);
         }
     }
+    // #endregion
 
+    // #region Actions
     /**
      * Makes the character jump by setting vertical speed.
      */
@@ -169,16 +181,8 @@ export class Character extends MovableObject {
         const timePassed = new Date().getTime() - this.lastThrow;
         return timePassed > 500;
     }
-}
-//Was passiert hier?
+    // #endregion
 
-//extends MovableObject -> Character erbt alles von der Basisklasse
-//super() -> ruft den Konstruktor der Elternklasse auf – das ist in JavaScript Pflicht bei Vererbung
-//x, y -> Startposition von Pepe auf dem Canvas
-//speed -> wie schnell sich Pepe bewegt
-//loadImage() -> kommt aus MovableObject – ich nutze sie direkt, ohne sie neu zu schreiben! -> setzt das erste Idle-Bild als Startbild -> → lädt alle Animations-Bilder in den Cache vor – so gibt es später keine Verzögerung beim Abspielen
-//PS.:Die Bild-Arrays stehen als Konstanten außerhalb der Klasse – sauber und übersichtlich, die Klasse selbst bleibt schlank
-//Die Klasse ist vorbereitet für alle Zustände: idle, walking, jumping, hurt, dead
-//keyboard wird als Parameter übergeben – der Character weiß so immer welche Tasten gedrückt sind
-//animate() startet zwei Intervalle – eines für die Bewegung (60fps) und eines für die Animation (15fps) – so läuft Pepe flüssig
-//handleMovement() und handleAnimation() haben jeweils nur eine Aufgabe – sauber nach Checkliste!
+}
+// #endregion class Character
+

@@ -5,14 +5,20 @@ const IMAGES_COIN = [
     "assets/img/8_coin/coin_2.png",
 ];
 
+/**
+ * Represents a collectible coin.
+ */
+// #region class Coin
 export class Coin extends MovableObject {
+    // #region Properties
     width = 80;
     height = 80;
+    // #endregion
 
+    // #region Constructor
     /**
-     * Creates a coin at the given position.
-     * @param {number} x - The x position of the coin.
-     * @param {number} y - The y position of the coin.
+     * @param {number} x - The x position.
+     * @param {number} y - The y position.
      */
     constructor(x, y) {
         super();
@@ -21,4 +27,6 @@ export class Coin extends MovableObject {
         this.loadImage(IMAGES_COIN[0]);
         this.loadImages(IMAGES_COIN);
     }
+    // #endregion
 }
+// #endregion class Coin

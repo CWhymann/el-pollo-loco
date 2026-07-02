@@ -1,3 +1,7 @@
+/**
+ * Represents the current state of keyboard inputs.
+ * Each property is true when the key is pressed, false when released.
+ */
 export class Keyboard {
     LEFT = false;
     RIGHT = false;
@@ -6,7 +10,3 @@ export class Keyboard {
     SPACE = false;
     D = false;
 }
-
-//Was passiert hier?
-//Jede Taste hat einen eigenen Boolean – true wenn gedrückt, false wenn losgelassen
-//Simpel, sauber und leicht erweiterbar

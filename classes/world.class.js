@@ -8,8 +8,14 @@ import { AudioManager } from "../classes/audio-manager.class.js";
 import { ChickenSmall } from "../classes/chicken-small.class.js";
 import { Bottle } from "../classes/bottle.class.js";
 import { StartScreenChicken } from "../classes/start-screen-chicken.class.js";
+import { IntervalHub } from "./interval-hub.class.js";
 
+/**
+ * Represents the main game world.
+ */
+// #region class World
 export class World {
+    // #region Properties
     character;
     level = null;
     canvas;
@@ -27,9 +33,11 @@ export class World {
     gameWon = false;
     winScreen = new WinScreen();
     audioManager = new AudioManager();
+    spawnIntervalId = null;
+    // #endregion
 
+    // #region Constructor
     /**
-     * Creates the game world.
      * @param {Character} character - The player character.
      * @param {HTMLCanvasElement} canvas - The canvas element.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
@@ -43,26 +51,102 @@ export class World {
         this.audioManager.loadMuteState();
         this.bottleBar.setPercentage(0);
         this.coinBar.setPercentage(0);
+
         const startButton = document.getElementById("start-button");
-        startButton.addEventListener("click", () => {
-            this.level = createLevel1();
-            this.level.enemies.forEach((enemy) => {
-                if (enemy instanceof Endboss) {
-                    enemy.world = this;
-                }
-            });
-            this.gameStarted = true;
-            document.getElementById("start-screen").remove();
-        });
+        if (startButton) {
+            startButton.addEventListener("click", () => this.startGame());
+        }
+
+        const restartButton = document.getElementById("restart-button");
+        if (restartButton) {
+            restartButton.addEventListener("click", () => this.resetGame());
+        }
+
+        const backToStartButton = document.getElementById("back-to-start-button");
+        if (backToStartButton) {
+            backToStartButton.addEventListener("click", () => this.returnToStart());
+        }
+
         this.draw();
         this.spawnBottle();
     }
+    // #endregion
+
+    // #region Game Control
+    /**
+     * Starts the game by loading the level and hiding screens.
+     */
+    startGame() {
+        this.level = createLevel1();
+        this.level.enemies.forEach((enemy) => {
+            if (enemy instanceof Endboss) {
+                enemy.world = this;
+            }
+        });
+        this.gameStarted = true;
+        const startScreen = document.getElementById("start-screen");
+        if (startScreen) startScreen.remove();
+    }
 
     /**
-     * Main draw loop - redraws the entire world every frame.
+     * Resets the game state, stops all intervals and restarts immediately.
+     */
+    resetGame() {
+        IntervalHub.stopAllIntervals();
+        this.gameOver = false;
+        this.gameWon = false;
+        this.gameStarted = true;
+        
+        this.character.x = 0;
+        this.character.y = 155;
+        this.character.energy = 100;
+        this.character.bottles = 0;
+        this.character.coins = 0;
+        this.character.speedY = 0;
+        this.character.otherDirection = false;
+        
+        this.healthBar.setPercentage(100);
+        this.bottleBar.setPercentage(0);
+        this.coinBar.setPercentage(0);
+
+        this.throwableObjects = [];
+        this.level = createLevel1();
+        this.level.enemies.forEach((enemy) => {
+            if (enemy instanceof Endboss) enemy.world = this;
+        });
+
+        this.character.animate();
+        this.spawnBottle();
+        
+        const gameOverScreen = document.getElementById("game-over-screen");
+        const winScreen = document.getElementById("win-screen");
+        if (gameOverScreen) gameOverScreen.style.display = "none";
+        if (winScreen) winScreen.style.display = "none";
+    }
+
+    /**
+     * Stops the game and returns to the start screen (Menu).
+     */
+    returnToStart() {
+        IntervalHub.stopAllIntervals();
+        this.gameStarted = false;
+        this.gameOver = false;
+        this.gameWon = false;
+        
+        const startScreenElement = document.getElementById("start-screen");
+        if (startScreenElement) {
+            startScreenElement.style.display = "block";
+        }
+    }
+    // #endregion
+
+    // #region Game Loop & Rendering
+    /**
+     * Main draw loop.
      */
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         if (!this.gameStarted) {
             this.addToMap(this.startScreen);
             this.addToMap(this.startScreenChicken);
@@ -71,6 +155,7 @@ export class World {
         }
         if (this.gameOver) {
             this.addToMap(this.gameOverScreen);
+            if (this.spawnIntervalId) IntervalHub.stopInterval(this.spawnIntervalId);
             requestAnimationFrame(() => this.draw());
             return;
         }
@@ -79,6 +164,7 @@ export class World {
             requestAnimationFrame(() => this.draw());
             return;
         }
+
         this.updateCamera();
         this.checkCollisions();
         this.checkCoinCollisions();
@@ -86,40 +172,84 @@ export class World {
         this.checkThrowableCollisions();
         this.checkEndbossContact();
         this.removeDeadEnemies();
+
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsToMap(this.level.backgroundObjects);
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);
+        
         this.level.enemies.forEach((enemy) => {
             if (enemy instanceof ChickenSmall && enemy.isKnockedOut) {
                 this.drawKnockoutStars(enemy);
             }
         });
+
         this.addObjectsToMap(this.level.coins);
         this.addObjectsToMap(this.level.bottles);
+        
         this.throwableObjects = this.throwableObjects.filter(
-            (bottle) => !bottle.thrown || bottle.currentImage < 6,
+            (bottle) => !bottle.thrown || bottle.currentImage < 6
         );
         this.addObjectsToMap(this.throwableObjects);
+        
         this.drawCharacterShadow();
         this.addToMap(this.character);
         this.ctx.translate(-this.camera_x, 0);
+        
         this.addToMap(this.healthBar);
         this.addToMap(this.bottleBar);
         this.addToMap(this.coinBar);
+
         requestAnimationFrame(() => this.draw());
     }
 
     /**
-     * Updates the camera position to follow the character.
+     * Draws character shadow.
      */
+    drawCharacterShadow() {
+        const groundY = 420;
+        const heightAboveGround = groundY - (this.character.y + this.character.height);
+        const scale = Math.max(0.3, 1 - heightAboveGround / 200);
+        
+        this.ctx.save();
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        this.ctx.beginPath();
+        this.ctx.ellipse(
+            this.character.x + this.character.width / 2,
+            groundY,
+            35 * scale,
+            7.5 * scale,
+            0, 0, Math.PI * 2
+        );
+        this.ctx.fill();
+        this.ctx.restore();
+    }
+    // #endregion
+
+    // #region Camera & Logic
+    /** Updates camera position. */
     updateCamera() {
         this.camera_x = -this.character.x + 100;
     }
 
-    /**
-     * Checks for collisions between character and enemies.
-     */
+    /** Checks endboss contact. */
+    checkEndbossContact() {
+        const endboss = this.level.enemies.find((e) => e instanceof Endboss);
+        if (endboss && this.character.x > 1800) {
+            endboss.hadFirstContact = true;
+        }
+    }
+
+    /** Removes dead enemies. */
+    removeDeadEnemies() {
+        this.level.enemies = this.level.enemies.filter(
+            (enemy) => !enemy.markedForDeletion
+        );
+    }
+    // #endregion
+
+    // #region Collision Detection
+    /** Checks collisions with enemies. */
     checkCollisions() {
         this.level.enemies.forEach((enemy) => {
             if (this.character.isColliding(enemy)) {
@@ -153,9 +283,7 @@ export class World {
         }
     }
 
-    /**
-     * Checks for collisions between character and coins.
-     */
+    /** Checks coin collisions. */
     checkCoinCollisions() {
         this.level.coins.forEach((coin, index) => {
             if (this.character.isColliding(coin)) {
@@ -166,9 +294,7 @@ export class World {
         });
     }
 
-    /**
-     * Checks for collisions between character and bottles.
-     */
+    /** Checks bottle collisions. */
     checkBottleCollisions() {
         this.level.bottles = this.level.bottles.filter((bottle) => {
             if (this.character.isColliding(bottle)) {
@@ -180,9 +306,7 @@ export class World {
         });
     }
 
-    /**
-     * Checks for collisions between thrown bottles and enemies.
-     */
+    /** Checks throwable collisions. */
     checkThrowableCollisions() {
         this.throwableObjects.forEach((bottle) => {
             this.level.enemies.forEach((enemy) => {
@@ -193,38 +317,15 @@ export class World {
             });
         });
     }
+    // #endregion
 
-    /**
-     * Checks if the character is close to the endboss.
-     */
-    checkEndbossContact() {
-        const endboss = this.level.enemies.find((e) => e instanceof Endboss);
-        if (endboss && this.character.x > 1800) {
-            endboss.hadFirstContact = true;
-        }
-    }
-
-    /**
-     * Removes dead enemies from the level.
-     */
-    removeDeadEnemies() {
-        this.level.enemies = this.level.enemies.filter(
-            (enemy) => !enemy.markedForDeletion,
-        );
-    }
-
-    /**
-     * Draws a list of objects onto the canvas.
-     * @param {MovableObject[]} objects - Array of objects to draw.
-     */
+    // #region Drawing Helpers
+    /** Draws objects. */
     addObjectsToMap(objects) {
         objects.forEach((obj) => this.addToMap(obj));
     }
 
-    /**
-     * Draws a single object, flipped if necessary.
-     * @param {MovableObject} mo - The object to draw.
-     */
+    /** Draws single object. */
     addToMap(mo) {
         if (mo.otherDirection) {
             mo.drawFlipped(this.ctx);
@@ -232,14 +333,13 @@ export class World {
             mo.draw(this.ctx);
         }
     }
-    /**
-     * Draws rotating stars above a knocked out chicken.
-     * @param {ChickenSmall} enemy - The knocked out chicken.
-     */
+
+    /** Draws knockout stars. */
     drawKnockoutStars(enemy) {
         const time = new Date().getTime();
         const timePassed = time - enemy.knockedOutTime;
         if (timePassed > enemy.knockedOutDuration) return;
+        
         this.ctx.save();
         for (let i = 0; i < 3; i++) {
             const angle = time / 200 + i * 2.09;
@@ -250,42 +350,18 @@ export class World {
         }
         this.ctx.restore();
     }
-    /**
-     * Spawns a new bottle at a random position every 15 seconds.
-     */
+    // #endregion
+
+    // #region Spawning
+    /** Spawns bottles via IntervalHub. */
     spawnBottle() {
-        setInterval(() => {
+        this.spawnIntervalId = IntervalHub.startInterval(() => {
             if (this.level && this.level.bottles.length < 5) {
                 const x = 200 + Math.random() * 1800;
                 this.level.bottles.push(new Bottle(x, 380));
             }
         }, 15000);
     }
-
-    /**
-     * Draws a shadow beneath the character that shrinks when jumping.
-     */
-    drawCharacterShadow() {
-        const groundY = 420;
-        const heightAboveGround =
-            groundY - (this.character.y + this.character.height);
-        const scale = Math.max(0.3, 1 - heightAboveGround / 200);
-        const shadowWidth = 70 * scale;
-        const shadowHeight = 15 * scale;
-
-        this.ctx.save();
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-        this.ctx.beginPath();
-        this.ctx.ellipse(
-            this.character.x + this.character.width / 2,
-            groundY,
-            shadowWidth / 2,
-            shadowHeight / 2,
-            0,
-            0,
-            Math.PI * 2,
-        );
-        this.ctx.fill();
-        this.ctx.restore();
-    }
+    // #endregion
 }
+// #endregion class World   

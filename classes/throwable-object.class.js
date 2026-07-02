@@ -1,4 +1,5 @@
 import { MovableObject } from "./movable-object.class.js";
+import { IntervalHub } from "./interval-hub.class.js";
 
 const IMAGES_ROTATION = [
     "assets/img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png",
@@ -16,14 +17,21 @@ const IMAGES_SPLASH = [
     "assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/6_bottle_splash.png",
 ];
 
+/**
+ * Represents a throwable bottle (salsa).
+ */
+// #region class ThrowableObject
 export class ThrowableObject extends MovableObject {
+    // #region Properties
     width = 60;
     height = 80;
     thrown = false;
     acceleration = 1;
+    moveIntervalId = null;
+    // #endregion
 
+    // #region Constructor
     /**
-     * Creates a throwable bottle at the given position.
      * @param {number} x - Starting x position.
      * @param {number} y - Starting y position.
      */
@@ -36,31 +44,34 @@ export class ThrowableObject extends MovableObject {
         this.loadImages(IMAGES_SPLASH);
         this.throw();
     }
+    // #endregion
 
-    /**
-     * Checks if the bottle is above the ground level.
-     * @returns {boolean} True if the bottle is above ground.
-     */
+    // #region Logic
+    /** @returns {boolean} */
     isAboveGround() {
         return this.y < 360;
     }
 
-    /**
-     * Starts the throwing animation and movement.
-     */
+    /** Starts throwing animation and movement. */
     throw() {
         this.speedY = 15;
         this.applyGravity();
-        setInterval(() => {
+        this.moveIntervalId = IntervalHub.startInterval(() => {
             if (!this.thrown) {
                 this.x += 10;
                 this.playAnimation(IMAGES_ROTATION);
             } else {
                 this.playAnimation(IMAGES_SPLASH);
             }
-            if (this.y > 360) {
-                this.thrown = true;
-            }
+            if (this.y >= 360) this.thrown = true;
         }, 1000 / 25);
     }
+
+    /** Stops all intervals for this bottle. */
+    stop() {
+        if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
+        this.stopGravity();
+    }
+    // #endregion
 }
+// #endregion class ThrowableObject

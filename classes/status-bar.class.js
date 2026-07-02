@@ -27,17 +27,23 @@ const IMAGES_COIN = [
     "assets/img/7_statusbars/1_statusbar/1_statusbar_coin/green/100.png",
 ];
 
+/**
+ * Represents a status bar (health, bottle or coin).
+ */
+// #region class StatusBar
 export class StatusBar extends MovableObject {
+    // #region Properties
     width = 200;
     height = 50;
     percentage = 100;
     images;
+    // #endregion
 
+    // #region Constructor
     /**
-     * Creates a status bar at the given position.
-     * @param {number} x - The x position of the status bar.
-     * @param {number} y - The y position of the status bar.
-     * @param {string} type - The type of status bar: 'health', 'bottle' or 'coin'.
+     * @param {number} x - The x position.
+     * @param {number} y - The y position.
+     * @param {string} type - 'health', 'bottle' or 'coin'.
      */
     constructor(x, y, type) {
         super();
@@ -47,11 +53,12 @@ export class StatusBar extends MovableObject {
         this.x = x;
         this.y = y;
     }
+    // #endregion
 
+    // #region Logic
     /**
-     * Returns the correct image array based on the type.
-     * @param {string} type - The type of status bar.
-     * @returns {string[]} The image array.
+     * @param {string} type
+     * @returns {string[]}
      */
     getImagesByType(type) {
         if (type === "health") return IMAGES_HEALTH;
@@ -60,8 +67,7 @@ export class StatusBar extends MovableObject {
     }
 
     /**
-     * Sets the status bar image based on the given percentage.
-     * @param {number} percentage - The current percentage (0-100).
+     * @param {number} percentage
      */
     setPercentage(percentage) {
         this.percentage = percentage;
@@ -69,10 +75,7 @@ export class StatusBar extends MovableObject {
         this.img = this.imageCache[this.images[index]];
     }
 
-    /**
-     * Returns the image index based on the current percentage.
-     * @returns {number} The index of the correct image.
-     */
+    /** @returns {number} */
     resolveImageIndex() {
         if (this.percentage === 100) return 5;
         if (this.percentage > 80) return 4;
@@ -81,4 +84,6 @@ export class StatusBar extends MovableObject {
         if (this.percentage > 20) return 1;
         return 0;
     }
+    // #endregion
 }
+// #endregion class StatusBar
