@@ -5,85 +5,115 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>El Pollo Loco</title>
         <link rel="icon" href="./assets/icons/Huhn.svg" />
-        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/reset.css" />
+<link rel="stylesheet" href="css/fonts.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/mobile.css" />
         <script type="module" src="js/game.js" defer></script>
     </head>
     <body>
+        <!-- Header mit Titel und Salsa-Dekoration -->
         <header class="game-header">
             <div class="salsa-container">
                 <img
                     src="./assets/img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png"
                     class="salza-bottle-icon"
-                    alt="Salsa-Bottle"
+                    alt="Salsa Flasche"
                 />
                 <img
                     src="assets/icons/blood-drop.png"
                     class="blood-icon bottle-drop"
+                    alt=""
                 />
             </div>
-
             <h1 id="game-title">
                 E<span class="drip"
-                    >l<img src="assets/icons/blood-drop.png" class="blood-icon"
-                /></span>
-                Po<span class="drip"
-                    >l<img src="assets/icons/blood-drop.png" class="blood-icon"
-                /></span>
-                <span class="drip"
                     >l<img
                         src="assets/icons/blood-drop.png"
-                        class="blood-icon" /></span
+                        class="blood-icon"
+                        alt=""
+                /></span>
+                Po<span class="drip"
+                    >l<img
+                        src="assets/icons/blood-drop.png"
+                        class="blood-icon"
+                        alt="" /></span
+                ><span class="drip"
+                    >l<img
+                        src="assets/icons/blood-drop.png"
+                        class="blood-icon"
+                        alt="" /></span
                 >o
                 <span class="drip"
                     >L<img
                         src="assets/icons/blood-drop.png"
-                        class="blood-icon" /></span
+                        class="blood-icon"
+                        alt="" /></span
                 >oco
             </h1>
         </header>
 
+        <!-- Spielbereich -->
         <div id="game-container">
             <canvas id="canvas"></canvas>
+
+            <!-- Salsa Splash Dekorationen am Canvas-Rand -->
             <img
                 src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png"
                 class="canvas-splash splash-1"
+                alt=""
             />
             <img
                 src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png"
                 class="canvas-splash splash-2"
+                alt=""
             />
             <img
                 src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/4_bottle_splash.png"
                 class="canvas-splash splash-3"
+                alt=""
             />
+
+            <!-- Startscreen Buttons -->
             <div id="start-screen">
-                <button id="start-button" class="splash-button splash-play">
+                <button
+                    id="start-button"
+                    class="splash-button"
+                    aria-label="Spiel starten"
+                >
                     Play
                 </button>
                 <button
                     id="controls-button"
-                    class="splash-button splash-secondary"
+                    class="splash-button"
+                    aria-label="Steuerung anzeigen"
                 >
                     <span class="btn-text">Controls</span>
                 </button>
                 <button
                     id="imprint-button"
-                    class="splash-button splash-secondary"
+                    class="splash-button"
+                    aria-label="Impressum anzeigen"
                 >
                     <span class="btn-text">Index</span>
                 </button>
             </div>
+
+            <!-- UI Buttons -->
             <div id="ui-buttons">
-                <button id="mute-button">🔊</button>
-                <button id="fullscreen-button">⛶</button>
-            </div>
-            <div id="mobile-controls">
-                <button id="btn-left">◀</button>
-                <button id="btn-jump">▲</button>
-                <button id="btn-right">▶</button>
-                <button id="btn-throw">🍶</button>
+                <button id="mute-button" aria-label="Sound ein/aus">🔊</button>
+                <button id="fullscreen-button" aria-label="Vollbild">⛶</button>
             </div>
 
+            <!-- Mobile Steuerung -->
+            <div id="mobile-controls">
+                <button id="btn-left" aria-label="Links">◀</button>
+                <button id="btn-jump" aria-label="Springen">▲</button>
+                <button id="btn-right" aria-label="Rechts">▶</button>
+                <button id="btn-throw" aria-label="Werfen">🍶</button>
+            </div>
+
+            <!-- Rotationshinweis für Mobile -->
             <div id="rotate-screen">
                 <p>🔄 Please rotate your device to play!</p>
             </div>

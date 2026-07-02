@@ -1,24 +1,4 @@
-@font-face {
-    font-family: "Boogaloo";
-    src: url("../assets/fonts/Boogaloo-Regular.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
-    text-decoration: none;
-    position: relative;
-    list-style: none;
-    font-size: inherit;
-    color: inherit;
-    font-family: inherit;
-    background: initial;
-    border: initial;
-}
-
+/* #region Base Layout */
 body {
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
@@ -39,18 +19,9 @@ canvas {
     border: 4px solid #f30f31;
     border-radius: 8px;
 }
-#start-screen {
-    position: absolute;
-    top: 15px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 20px;
-}
+/* #endregion */
 
+/* #region Header & Title */
 .game-header {
     display: flex;
     flex-direction: column;
@@ -71,17 +42,7 @@ canvas {
     width: 100%;
     height: auto;
     filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.5));
-    transform: rotate(-3deg);
     animation: bottle-float 4s ease-in-out infinite alternate;
-}
-
-@keyframes bottle-float {
-    0% {
-        transform: rotate(-12deg) translateY(0px);
-    }
-    100% {
-        transform: rotate(-2deg) translateY(-10px);
-    }
 }
 
 #game-title {
@@ -101,7 +62,9 @@ canvas {
         2px 2px 0 #000,
         0px 6px 12px rgba(0, 0, 0, 0.9);
 }
+/* #endregion */
 
+/* #region Blood Drop Animation */
 .blood-icon {
     position: absolute;
     left: 85%;
@@ -151,20 +114,23 @@ canvas {
     }
 }
 
-@media (max-width: 600px) {
-    #game-title {
-        font-size: 32px;
+@keyframes bottle-float {
+    0% {
+        transform: rotate(-12deg) translateY(0px);
     }
-    .blood-icon {
-        width: 6px;
+    100% {
+        transform: rotate(-2deg) translateY(-10px);
     }
 }
+/* #endregion */
 
+/* #region Game Container & Canvas Splashes */
 #game-container {
     position: relative;
     width: 720px;
     height: 480px;
 }
+
 .canvas-splash {
     position: absolute;
     top: -15px;
@@ -176,21 +142,25 @@ canvas {
     left: 32%;
     width: 48px;
 }
-
 .splash-2 {
     left: 45%;
     width: 64px;
 }
-
 .splash-3 {
     left: 56%;
     width: 36px;
 }
+/* #endregion */
 
+/* #region Start Screen & Buttons */
 #start-screen {
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 100%;
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     gap: 20px;
 }
@@ -217,6 +187,7 @@ canvas {
     font-size: 32px;
     animation: pulse 1.5s ease-in-out infinite;
 }
+
 #start-button:hover {
     background-image: url("../assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/4_bottle_splash.png");
 }
@@ -233,6 +204,7 @@ canvas {
     display: inline-block;
     transform: scaleX(-1);
 }
+
 #controls-button:hover {
     background-image: url("../assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png");
     transform: scaleX(-1) scale(1.05);
@@ -250,6 +222,7 @@ canvas {
     display: inline-block;
     transform: scaleX(-1);
 }
+
 #imprint-button:hover {
     background-image: url("../assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png");
     transform: scaleX(-1) scale(1.05);
@@ -264,7 +237,9 @@ canvas {
         transform: scale(1.08);
     }
 }
+/* #endregion */
 
+/* #region UI Buttons */
 #ui-buttons {
     position: absolute;
     bottom: 10px;
@@ -282,16 +257,10 @@ canvas {
     color: white;
     border-radius: 8px;
 }
+/* #endregion */
 
-#game-container:-webkit-full-screen {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: black;
-}
-
+/* #region Fullscreen */
+#game-container:-webkit-full-screen,
 #game-container:fullscreen {
     width: 100vw;
     height: 100vh;
@@ -307,7 +276,9 @@ canvas {
     height: 100vh;
     object-fit: fill;
 }
+/* #endregion */
 
+/* #region Mobile Controls */
 #mobile-controls {
     display: none;
     position: absolute;
@@ -315,6 +286,16 @@ canvas {
     width: 100%;
     justify-content: space-between;
     padding: 0 20px;
+}
+
+#mobile-controls button {
+    padding: 15px 25px;
+    font-size: 24px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #rotate-screen {
@@ -331,25 +312,4 @@ canvas {
     font-size: 28px;
     z-index: 999;
 }
-
-@media (max-width: 768px) and (orientation: landscape) {
-    #mobile-controls {
-        display: flex;
-    }
-}
-
-@media (max-width: 768px) and (orientation: portrait) {
-    #rotate-screen {
-        display: flex;
-    }
-}
-
-#mobile-controls button {
-    padding: 15px 25px;
-    font-size: 24px;
-    cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    -webkit-user-select: none;
-    user-select: none;
-}
+/* #endregion */

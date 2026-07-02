@@ -1,0 +1,23 @@
+/* #region Mobile Controls */
+@media (max-width: 768px) and (orientation: landscape) {
+    #mobile-controls {
+        display: flex;
+    }
+}
+@media (max-width: 768px) and (orientation: portrait) {
+    #rotate-screen {
+        display: flex;
+    }
+}
+/* #endregion */
+
+/* #region Responsive Typography */
+@media (max-width: 600px) {
+    #game-title {
+        font-size: 32px;
+    }
+    .blood-icon {
+        width: 6px;
+    }
+}
+/* #endregion */
