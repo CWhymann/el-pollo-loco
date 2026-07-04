@@ -78,6 +78,7 @@ export class Character extends MovableObject {
     y = 155;
     width = 120;
     height = 280;
+    offset = { top: 100, bottom: 15, left: 35, right: 35 };
     speed = 5;
     otherDirection = false;
     keyboard;
@@ -182,7 +183,6 @@ export class Character extends MovableObject {
         return timePassed > 500;
     }
     // #endregion
-
 }
 // #endregion class Character
 

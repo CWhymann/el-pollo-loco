@@ -52,8 +52,9 @@ export class Endboss extends MovableObject {
     y = 50;
     width = 250;
     height = 400;
+    offset = { top: 60, bottom: 20, left: 40, right: 40 };
     speed = 0.8;
-    energy = 20;
+    energy = 25;
     hadFirstContact = false;
     isDying = false;
     moveIntervalId = null;
@@ -100,11 +101,10 @@ export class Endboss extends MovableObject {
             this.playAnimation(IMAGES_DEAD);
         } else if (this.isDead() && !this.isDying) {
             this.isDying = true;
-            // Timeout über IntervalHub statt setTimeout für sauberes Stoppen
             this.deleteTimeoutId = IntervalHub.startInterval(() => {
                 this.markedForDeletion = true;
                 if (this.world) this.world.gameWon = true;
-                this.stop(); // Sich selbst stoppen nach dem Sieg
+                this.stop(); 
             }, 3000);
         } else if (!this.isDead() && this.isHurt()) {
             this.playAnimation(IMAGES_HURT);

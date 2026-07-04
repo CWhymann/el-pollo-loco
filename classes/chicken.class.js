@@ -21,6 +21,7 @@ export class Chicken extends MovableObject {
     y = 360;
     width = 70;
     height = 80;
+    offset = { top: 5, bottom: 3, left: 5, right: 5 };
     speed = 0.15 + Math.random() * 0.5;
     energy = 5;
     isDying = false;

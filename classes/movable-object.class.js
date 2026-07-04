@@ -11,6 +11,7 @@ export class MovableObject {
     y;
     width;
     height;
+    offset = { top: 0, bottom: 0, left: 0, right: 0 };
     img;
     imageCache = {};
     currentImage = 0;
@@ -18,6 +19,7 @@ export class MovableObject {
     acceleration = 2.5;
     energy = 100;
     lastHit = 0;
+    markedForDeletion = false;
     /** @type {number|null} Speichert die ID des Gravitations-Intervalls */
     gravityIntervalId = null;
     // #endregion
@@ -80,6 +82,26 @@ export class MovableObject {
     // #endregion
 
     // #region Collision & Health
+    /** @returns {number} Die tatsächliche (sichtbare) x-Position, inkl. Offset. */
+    get rX() {
+        return this.x + this.offset.left;
+    }
+
+    /** @returns {number} Die tatsächliche (sichtbare) y-Position, inkl. Offset. */
+    get rY() {
+        return this.y + this.offset.top;
+    }
+
+    /** @returns {number} Die tatsächliche (sichtbare) Breite, inkl. Offset. */
+    get rW() {
+        return this.width - this.offset.left - this.offset.right;
+    }
+
+    /** @returns {number} Die tatsächliche (sichtbare) Höhe, inkl. Offset. */
+    get rH() {
+        return this.height - this.offset.top - this.offset.bottom;
+    }
+
     /**
      * Checks if this object is colliding with another object.
      * @param {MovableObject} mo - The object to check collision with.
@@ -87,10 +109,10 @@ export class MovableObject {
      */
     isColliding(mo) {
         return (
-            this.x + this.width - 10 > mo.x &&
-            this.y + this.height - 10 > mo.y &&
-            this.x + 10 < mo.x + mo.width &&
-            this.y + 10 < mo.y + mo.height
+            this.rX + this.rW > mo.rX &&
+            this.rY + this.rH > mo.rY &&
+            this.rX < mo.rX + mo.rW &&
+            this.rY < mo.rY + mo.rH
         );
     }
 
@@ -129,7 +151,6 @@ export class MovableObject {
      * Stores the interval ID for later cleanup.
      */
     applyGravity() {
-        // ID speichern, um das Intervall später einzeln stoppen zu können
         this.gravityIntervalId = IntervalHub.startInterval(() => {
             if (this.isAboveGround() || this.speedY > 0) {
                 this.y -= this.speedY;
