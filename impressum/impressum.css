@@ -1,0 +1,59 @@
+body {
+    background-color: #1a1a1a;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+        url("../assets/backgrounds/mariachi_BG.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+}
+
+.impressum-container {
+    background-color: rgba(20, 20, 20, 0.9);
+    border: 3px solid #f30f31;
+    border-radius: 12px;
+    max-width: 640px;
+    width: 100%;
+    padding: 32px 36px;
+    color: #fff5e0;
+}
+
+.impressum-container h1 {
+    font-family: "Boogaloo", sans-serif;
+    font-size: 2.5rem;
+    color: #e80f2c;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.impressum-container h2 {
+    font-size: 1.2rem;
+    margin-top: 24px;
+    margin-bottom: 8px;
+    color: #f30f31;
+}
+
+.impressum-container p {
+    line-height: 1.6;
+    margin-bottom: 6px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 28px;
+    padding: 10px 20px;
+    background-color: #f30f31;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    background-color: #c00d27;
+}

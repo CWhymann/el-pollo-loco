@@ -83,6 +83,18 @@ export class World {
      * Starts the game by loading the level and hiding screens.
      */
     startGame() {
+        this.character.x = 0;
+        this.character.y = 155;
+        this.character.energy = 100;
+        this.character.bottles = 0;
+        this.character.coins = 0;
+        this.character.speedY = 0;
+        this.character.otherDirection = false;
+
+        this.healthBar.setPercentage(100);
+        this.bottleBar.setPercentage(0);
+        this.coinBar.setPercentage(0);
+
         this.level = createLevel1();
         this.totalCoins = this.level.coins.length;
         this.totalBottles = this.level.bottles.length;
@@ -399,7 +411,7 @@ export class World {
                 const x = 200 + Math.random() * 1800;
                 this.level.bottles.push(new Bottle(x, 380));
             }
-        }, 11000);
+        }, 10000);
     }
     // #endregion
 }

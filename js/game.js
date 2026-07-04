@@ -73,8 +73,22 @@ function initTouchControls() {
 }
 // #endregion
 
+// #region Imprint Navigation
+/**
+ * Registers the click event for navigating to the imprint page.
+ */
+function initImprintLink() {
+    const imprintButton = document.getElementById("imprint-button");
+    if (imprintButton) {
+        imprintButton.addEventListener("click", () => {
+            window.location.href = "impressum/impressum.html";
+        });
+    }
+}
+// #endregion
+
 initFullscreen();
 initKeyboard();
 initTouchControls();
-
+initImprintLink();
 const world = new World(character, canvas, ctx);
