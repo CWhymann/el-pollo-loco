@@ -1,12 +1,10 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
-
 const IMAGES_WALKING = [
     "assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/2_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
 ];
-
 /**
  * Represents the animated chicken on the start screen.
  */
@@ -23,7 +21,6 @@ export class StartScreenChicken extends MovableObject {
     moveIntervalId = null;
     animIntervalId = null;
     // #endregion
-
     // #region Constructor
     constructor() {
         super();
@@ -32,20 +29,20 @@ export class StartScreenChicken extends MovableObject {
         this.animate();
     }
     // #endregion
-
     // #region Logic
     /** Starts movement and animation via IntervalHub. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
             1000 / 60,
+            "persistent",
         );
         this.animIntervalId = IntervalHub.startInterval(
             () => this.playAnimation(IMAGES_WALKING),
             1000 / 10,
+            "persistent",
         );
     }
-
     /** Moves the chicken from left to right with a hop effect. */
     handleMovement() {
         this.x += this.speed;
@@ -60,7 +57,6 @@ export class StartScreenChicken extends MovableObject {
             this.otherDirection = true;
         }
     }
-
     /** Stops all intervals for this chicken. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);

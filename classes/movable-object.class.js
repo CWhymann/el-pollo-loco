@@ -149,14 +149,19 @@ export class MovableObject {
     /**
      * Applies gravity to the object on every frame using IntervalHub.
      * Stores the interval ID for later cleanup.
+     * @param {string} category - 'level' (default) or 'persistent'.
      */
-    applyGravity() {
-        this.gravityIntervalId = IntervalHub.startInterval(() => {
-            if (this.isAboveGround() || this.speedY > 0) {
-                this.y -= this.speedY;
-                this.speedY -= this.acceleration;
-            }
-        }, 1000 / 60);
+    applyGravity(category = "level") {
+        this.gravityIntervalId = IntervalHub.startInterval(
+            () => {
+                if (this.isAboveGround() || this.speedY > 0) {
+                    this.y -= this.speedY;
+                    this.speedY -= this.acceleration;
+                }
+            },
+            1000 / 60,
+            category,
+        );
     }
 
     /**

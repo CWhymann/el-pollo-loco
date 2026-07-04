@@ -136,6 +136,23 @@ export function createLevel1() {
                 "assets/img/5_background/layers/1_first_layer/2.png",
                 2160,
             ),
+
+            new BackgroundObject(
+                "assets/img/5_background/layers/air.png",
+                2880,
+            ),
+            new BackgroundObject(
+                "assets/img/5_background/layers/3_third_layer/1.png",
+                2880,
+            ),
+            new BackgroundObject(
+                "assets/img/5_background/layers/2_second_layer/1.png",
+                2880,
+            ),
+            new BackgroundObject(
+                "assets/img/5_background/layers/1_first_layer/1.png",
+                2880,
+            ),
         ],
     };
 }

@@ -1,28 +1,49 @@
 /**
  * Central hub for managing all game intervals.
- * Allows stopping all intervals at once for clean restarts.
+ * Supports categorized intervals so persistent objects
+ * (character, start-screen chicken) survive a level reset.
  */
+// #region class IntervalHub
 export class IntervalHub {
-    /** @type {number[]} */
+    /** @type {{id: number, category: string}[]} */
     static allIntervals = [];
 
     /**
-     * Starts a new interval and registers it.
+     * Starts a new interval and registers it under a category.
      * @param {Function} func - The function to execute repeatedly.
      * @param {number} timer - The interval duration in milliseconds.
+     * @param {string} category - 'level' (default) or 'persistent'.
      * @returns {number} The ID of the created interval.
      */
-    static startInterval(func, timer) {
-        const newInterval = setInterval(func, timer);
-        IntervalHub.allIntervals.push(newInterval);
-        return newInterval;
+    static startInterval(func, timer, category = "level") {
+        const id = setInterval(func, timer);
+        IntervalHub.allIntervals.push({ id, category });
+        return id;
     }
 
     /**
-     * Stops all registered intervals and clears the registry.
+     * Stops a single interval by ID and removes it from the registry.
+     * @param {number} id - The interval ID to stop.
      */
-    static stopAllIntervals() {
-        IntervalHub.allIntervals.forEach(clearInterval);
-        IntervalHub.allIntervals = [];
+    static stopInterval(id) {
+        clearInterval(id);
+        IntervalHub.allIntervals = IntervalHub.allIntervals.filter(
+            (entry) => entry.id !== id,
+        );
+    }
+
+    /**
+     * Stops all intervals of a given category.
+     * Defaults to 'level', so persistent objects are unaffected.
+     * @param {string} category - 'level', 'persistent', or 'all'.
+     */
+    static stopAllIntervals(category = "level") {
+        IntervalHub.allIntervals = IntervalHub.allIntervals.filter((entry) => {
+            const shouldStop =
+                category === "all" || entry.category === category;
+            if (shouldStop) clearInterval(entry.id);
+            return !shouldStop;
+        });
     }
 }
+// #endregion class IntervalHub

@@ -86,6 +86,8 @@ export class Character extends MovableObject {
     coins = 0;
     lastThrow = 0;
     lastMove = new Date().getTime();
+    minX = 0;
+    maxX = 2950;
     // #endregion
 
     // #region Constructor
@@ -103,23 +105,34 @@ export class Character extends MovableObject {
         this.loadImages(IMAGES_DEAD);
         this.loadImages(IMAGES_LONG_IDLE);
         this.animate();
-        this.applyGravity();
+        this.applyGravity("persistent");
     }
     // #endregion
 
     // #region Animation & Movement
     /**
      * Starts the animation and movement intervals.
+     * Marked as 'persistent' so they survive a level reset.
      */
     animate() {
-        IntervalHub.startInterval(() => this.handleMovement(), 1000 / 60);
-        IntervalHub.startInterval(() => this.handleAnimation(), 1000 / 15);
+        IntervalHub.startInterval(
+            () => this.handleMovement(),
+            1000 / 60,
+            "persistent",
+        );
+        IntervalHub.startInterval(
+            () => this.handleAnimation(),
+            1000 / 15,
+            "persistent",
+        );
     }
 
     /**
      * Handles character movement based on keyboard input.
+     * Clamps movement to the level boundaries (minX/maxX).
      */
     handleMovement() {
+        if (this.isDead()) return;
         if (this.keyboard.RIGHT) {
             this.x += this.speed;
             this.otherDirection = false;
@@ -130,6 +143,8 @@ export class Character extends MovableObject {
             this.otherDirection = true;
             this.lastMove = new Date().getTime();
         }
+        if (this.x < this.minX) this.x = this.minX;
+        if (this.x > this.maxX) this.x = this.maxX;
         if (this.keyboard.SPACE && !this.isAboveGround()) this.jump();
         if (this.keyboard.D && this.bottles > 0 && this.canThrow())
             this.throwBottle();
@@ -170,7 +185,12 @@ export class Character extends MovableObject {
         this.lastThrow = new Date().getTime();
         this.bottles--;
         this.world.bottleBar.setPercentage(this.bottles * 20);
-        const bottle = new ThrowableObject(this.x + 100, this.y + 100);
+        const throwX = this.otherDirection ? this.x - 50 : this.x + 100;
+        const bottle = new ThrowableObject(
+            throwX,
+            this.y + 100,
+            this.otherDirection,
+        );
         this.world.throwableObjects.push(bottle);
     }
 
@@ -185,4 +205,3 @@ export class Character extends MovableObject {
     // #endregion
 }
 // #endregion class Character
-

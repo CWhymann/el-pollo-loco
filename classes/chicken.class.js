@@ -1,16 +1,13 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
-
 const IMAGES_WALKING = [
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/1_w.png",
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/2_w.png",
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/3_w.png",
 ];
-
 const IMAGES_DEAD = [
     "assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png",
 ];
-
 /**
  * Represents a normal chicken enemy.
  */
@@ -29,7 +26,6 @@ export class Chicken extends MovableObject {
     animIntervalId = null;
     deleteTimeoutId = null;
     // #endregion
-
     // #region Constructor
     /**
      * @param {number} x - The starting x position.
@@ -43,7 +39,6 @@ export class Chicken extends MovableObject {
         this.animate();
     }
     // #endregion
-
     // #region Logic
     /** Starts movement and animation via IntervalHub. */
     animate() {
@@ -56,12 +51,18 @@ export class Chicken extends MovableObject {
             1000 / 8,
         );
     }
-
-    /** Moves the chicken to the left. */
+    /**
+     * Moves the chicken to the left. Dissolves silently once it has
+     * fully walked off the left edge of the level.
+     */
     handleMovement() {
+        if (this.isDying) return;
         if (!this.isDead()) this.x -= this.speed;
+        if (this.x + this.width < 0) {
+            this.markedForDeletion = true;
+            this.stop();
+        }
     }
-
     /** Handles animation based on state. */
     handleAnimation() {
         if (this.isDying) {
@@ -70,7 +71,6 @@ export class Chicken extends MovableObject {
             this.playAnimation(IMAGES_WALKING);
         }
     }
-
     /** Reduces energy and marks the chicken as dying. */
     hit() {
         this.energy = 0;
@@ -81,7 +81,6 @@ export class Chicken extends MovableObject {
             this.stop(); // Sich selbst stoppen
         }, 500);
     }
-
     /** Stops all intervals and timeouts for this chicken. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);

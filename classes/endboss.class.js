@@ -56,6 +56,7 @@ export class Endboss extends MovableObject {
     speed = 0.8;
     energy = 25;
     hadFirstContact = false;
+    otherDirection = false;
     isDying = false;
     moveIntervalId = null;
     animIntervalId = null;
@@ -88,10 +89,19 @@ export class Endboss extends MovableObject {
         );
     }
 
-    /** Moves the boss towards the character after first contact. */
+    /**
+     * Moves the boss towards the character's current position,
+     * following in either direction once first contact happened.
+     */
     handleMovement() {
-        if (this.hadFirstContact && !this.isDead()) {
+        if (!this.hadFirstContact || this.isDead() || !this.world) return;
+        const characterX = this.world.character.x;
+        if (characterX < this.x - 5) {
             this.x -= this.speed;
+            this.otherDirection = false;
+        } else if (characterX > this.x + 5) {
+            this.x += this.speed;
+            this.otherDirection = true;
         }
     }
 
@@ -101,10 +111,11 @@ export class Endboss extends MovableObject {
             this.playAnimation(IMAGES_DEAD);
         } else if (this.isDead() && !this.isDying) {
             this.isDying = true;
+            // Timeout über IntervalHub statt setTimeout für sauberes Stoppen
             this.deleteTimeoutId = IntervalHub.startInterval(() => {
                 this.markedForDeletion = true;
                 if (this.world) this.world.gameWon = true;
-                this.stop(); 
+                this.stop(); // Sich selbst stoppen nach dem Sieg
             }, 3000);
         } else if (!this.isDead() && this.isHurt()) {
             this.playAnimation(IMAGES_HURT);

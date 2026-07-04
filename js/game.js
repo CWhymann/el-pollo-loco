@@ -16,10 +16,12 @@ function initKeyboard() {
         if (e.key === "ArrowLeft") keyboard.LEFT = true;
         if (e.key === "ArrowRight") keyboard.RIGHT = true;
         if (e.key === "ArrowUp") keyboard.UP = true;
-        if (e.key === " ") keyboard.SPACE = true;
+        if (e.key === " ") {
+            e.preventDefault();
+            keyboard.SPACE = true;
+        }
         if (e.key === "d") keyboard.D = true;
     });
-
     window.addEventListener("keyup", (e) => {
         if (e.key === "ArrowLeft") keyboard.LEFT = false;
         if (e.key === "ArrowRight") keyboard.RIGHT = false;

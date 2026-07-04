@@ -54,7 +54,10 @@ export class ChickenSmall extends MovableObject {
             1000 / 10,
         );
     }
-    /** Moves the chicken, handling knock-out physics. */
+    /**
+     * Moves the chicken, handling knock-out physics. Dissolves silently
+     * once it has fully walked off the left edge of the level.
+     */
     handleMovement() {
         if (this.isDying) return;
         if (this.isKnockedOut) {
@@ -68,6 +71,10 @@ export class ChickenSmall extends MovableObject {
         } else {
             this.x -= this.speed;
             this.y = 380;
+        }
+        if (this.x + this.width < 0) {
+            this.markedForDeletion = true;
+            this.stop();
         }
     }
     /** Handles animation based on state. */
