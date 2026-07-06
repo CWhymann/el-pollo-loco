@@ -8,6 +8,7 @@ import { AudioManager } from "../classes/audio-manager.class.js";
 import { ChickenSmall } from "../classes/chicken-small.class.js";
 import { Bottle } from "../classes/bottle.class.js";
 import { StartScreenChicken } from "../classes/start-screen-chicken.class.js";
+import { ControlsDialog } from "../classes/controls-dialog.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
 
 /**
@@ -30,6 +31,8 @@ export class World {
     gameStarted = false;
     startScreen = new StartScreen();
     startScreenChicken = new StartScreenChicken();
+    controlsDialog = new ControlsDialog();
+    controlsDialogVisible = false;
     gameOver = false;
     gameOverScreen = new GameOverScreen();
     gameWon = false;
@@ -73,6 +76,17 @@ export class World {
             );
         }
 
+        const controlsButton = document.getElementById("controls-button");
+        const startScreenElement = document.getElementById("start-screen");
+        if (controlsButton) {
+            controlsButton.addEventListener("click", () => {
+                this.controlsDialogVisible = true;
+                if (startScreenElement)
+                    startScreenElement.style.visibility = "hidden";
+            });
+        }
+
+        this.canvas.addEventListener("click", (e) => this.handleCanvasClick(e));
         this.draw();
         this.spawnBottle();
     }
@@ -174,6 +188,7 @@ export class World {
         if (!this.gameStarted) {
             this.addToMap(this.startScreen);
             this.addToMap(this.startScreenChicken);
+            if (this.controlsDialogVisible) this.addToMap(this.controlsDialog);
             requestAnimationFrame(() => this.draw());
             return;
         }
@@ -251,6 +266,31 @@ export class World {
         );
         this.ctx.fill();
         this.ctx.restore();
+    }
+    // #endregion
+
+    // #region Controls Dialog
+    /**
+     * Handles clicks on the canvas to close the controls dialog
+     * when the close icon or the area outside the box is clicked.
+     * @param {MouseEvent} e - The click event.
+     */
+    handleCanvasClick(e) {
+        if (!this.controlsDialogVisible) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const px = (e.clientX - rect.left) * scaleX;
+        const py = (e.clientY - rect.top) * scaleY;
+        if (
+            this.controlsDialog.isCloseHit(px, py) ||
+            this.controlsDialog.isOutsideBox(px, py)
+        ) {
+            this.controlsDialogVisible = false;
+            const startScreenElement = document.getElementById("start-screen");
+            if (startScreenElement)
+                startScreenElement.style.visibility = "visible";
+        }
     }
     // #endregion
 
