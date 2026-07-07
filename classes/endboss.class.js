@@ -106,17 +106,13 @@ export class Endboss extends MovableObject {
     }
 
     /** Handles animation and death logic. */
+    /** Handles animation and death logic. */
     handleAnimation() {
         if (this.isDying) {
-            this.playAnimation(IMAGES_DEAD);
+            return;
         } else if (this.isDead() && !this.isDying) {
             this.isDying = true;
-            // Timeout über IntervalHub statt setTimeout für sauberes Stoppen
-            this.deleteTimeoutId = IntervalHub.startInterval(() => {
-                this.markedForDeletion = true;
-                if (this.world) this.world.gameWon = true;
-                this.stop(); // Sich selbst stoppen nach dem Sieg
-            }, 3000);
+            this.startDyingSequence();
         } else if (!this.isDead() && this.isHurt()) {
             this.playAnimation(IMAGES_HURT);
         } else if (this.hadFirstContact) {
@@ -124,6 +120,27 @@ export class Endboss extends MovableObject {
         } else {
             this.playAnimation(IMAGES_ALERT);
         }
+    }
+
+    /**
+     * Replaces the animation interval with a slower one dedicated
+     * to the dying sequence, plays the sound and schedules removal.
+     */
+    startDyingSequence() {
+        if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);
+        this.animIntervalId = IntervalHub.startInterval(
+            () => this.playAnimation(IMAGES_DEAD),
+            1000 / 3,
+        );
+        if (this.world) this.world.audioManager.play("endbossDead");
+        this.deleteTimeoutId = IntervalHub.startInterval(() => {
+            this.markedForDeletion = true;
+            if (this.world) {
+                this.world.gameWon = true;
+                this.world.audioManager.play("gameWin");
+            }
+            this.stop();
+        }, 3000);
     }
 
     /** Stops all intervals and timeouts for the boss. */

@@ -18,9 +18,7 @@ export class GameOverScreen extends MovableObject {
      */
     constructor() {
         super();
-        this.loadImage(
-            "assets/img/9_intro_outro_screens/game_over/game over.png",
-        );
+        this.loadImage("assets/img/You won, you lost/You lost.png");
     }
     // #endregion
 }

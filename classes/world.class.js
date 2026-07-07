@@ -55,6 +55,7 @@ export class World {
 
         this.audioManager.loadMuteState();
         this.loadSounds();
+        this.audioManager.play("background");
         this.bottleBar.setPercentage(0);
         this.coinBar.setPercentage(0);
 
@@ -121,8 +122,8 @@ export class World {
             "assets/audio/EPL_sounds/sounds/character/characterDamage.mp3",
         );
         this.audioManager.loadSound(
-            "characterDead",
-            "assets/audio/EPL_sounds/sounds/character/characterDead.wav",
+            "gameOver",
+            "assets/audio/EPL_sounds/sounds/game/gameOver.wav",
         );
         this.audioManager.loadSound(
             "snoring",
@@ -151,6 +152,19 @@ export class World {
         this.audioManager.loadSound(
             "endbossApproach",
             "assets/audio/EPL_sounds/sounds/endboss/endbossApproach.wav",
+        );
+        this.audioManager.loadSound(
+            "endbossDead",
+            "assets/audio/EPL_sounds/sounds/endboss/endbossDead.wav",
+        );
+        this.audioManager.loadSound(
+            "gameWin",
+            "assets/audio/EPL_sounds/sounds/game/gameWin.wav",
+        );
+        this.audioManager.loadSound(
+            "background",
+            "assets/audio/EPL_sounds/sounds/game/backgroundMusic.mp3",
+            true,
         );
         this.audioManager.loadSound(
             "gameStart",
@@ -193,6 +207,10 @@ export class World {
 
         this.gameStarted = true;
         this.audioManager.play("gameStart");
+        if (this.audioManager.sounds.background.paused) {
+            this.audioManager.play("background");
+        }
+
         const startScreen = document.getElementById("start-screen");
         if (startScreen) startScreen.style.display = "none";
         const gameUi = document.getElementById("game-ui");
@@ -241,7 +259,7 @@ export class World {
      */
     returnToStart() {
         IntervalHub.stopAllIntervals();
-        this.audioManager.stopAll();
+        this.audioManager.stopAll(["background"]);
         this.gameStarted = false;
         this.gameOver = false;
         this.gameWon = false;
@@ -429,7 +447,7 @@ export class World {
         });
         if (this.character.isDead() && !this.gameOver) {
             this.gameOver = true;
-            this.audioManager.play("characterDead");
+            this.audioManager.play("gameOver");
         }
     }
 

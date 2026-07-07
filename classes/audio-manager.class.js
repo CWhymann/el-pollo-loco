@@ -28,7 +28,7 @@ export class AudioManager {
     play(key) {
         if (!this.isMuted && this.sounds[key]) {
             this.sounds[key].currentTime = 0;
-            this.sounds[key].play();
+            this.sounds[key].play().catch(() => {});
         }
     }
 
@@ -43,11 +43,16 @@ export class AudioManager {
     }
     // #endregion
 
-    /** Stops all currently loaded sounds. */
-    stopAll() {
-        Object.keys(this.sounds).forEach((key) => this.stop(key));
+    /**
+     * Stops all currently loaded sounds, except any keys listed to exclude.
+     * @param {string[]} exclude - Sound keys that should keep playing.
+     */
+    stopAll(exclude = []) {
+        Object.keys(this.sounds).forEach((key) => {
+            if (!exclude.includes(key)) this.stop(key);
+        });
     }
-    
+
     // #region Mute Logic
     /** Toggles mute for all sounds. */
     toggleMute() {
