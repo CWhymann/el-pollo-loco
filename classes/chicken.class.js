@@ -75,6 +75,7 @@ export class Chicken extends MovableObject {
     hit() {
         this.energy = 0;
         this.isDying = true;
+        if (this.world) this.world.audioManager.play("chickenDead");
         // Timeout über IntervalHub für sauberes Stoppen beim Restart
         this.deleteTimeoutId = IntervalHub.startInterval(() => {
             this.markedForDeletion = true;

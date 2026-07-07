@@ -145,9 +145,27 @@ export class Character extends MovableObject {
         }
         if (this.x < this.minX) this.x = this.minX;
         if (this.x > this.maxX) this.x = this.maxX;
+
+        this.handleRunSound();
         if (this.keyboard.SPACE && !this.isAboveGround()) this.jump();
         if (this.keyboard.D && this.bottles > 0 && this.canThrow())
             this.throwBottle();
+    }
+    // #endregion
+
+    // #region Sound Helpers
+    /** Plays or stops the running sound based on movement state. */
+    handleRunSound() {
+        if (!this.world) return;
+        const isMoving =
+            (this.keyboard.RIGHT || this.keyboard.LEFT) &&
+            !this.isAboveGround();
+        if (isMoving && !this.world.audioManager.sounds.run.paused) return;
+        if (isMoving) {
+            this.world.audioManager.play("run");
+        } else {
+            this.world.audioManager.stop("run");
+        }
     }
 
     /**
@@ -164,18 +182,39 @@ export class Character extends MovableObject {
             this.playAnimation(IMAGES_WALKING);
         } else if (new Date().getTime() - this.lastMove > 8000) {
             this.playAnimation(IMAGES_LONG_IDLE);
+            this.handleSnoringSound();
         } else {
             this.playAnimation(IMAGES_IDLE);
         }
     }
     // #endregion
 
+    // #region Sound Helpers
+    /** Plays the snoring sound once while the character is in long-idle. */
+    handleSnoringSound() {
+        if (!this.world || !this.isGameActive()) return;
+        if (this.world.audioManager.sounds.snoring.paused) {
+            this.world.audioManager.play("snoring");
+        }
+    }
+
+    /** @returns {boolean} True if the game is currently being played. */
+    isGameActive() {
+        return (
+            this.world.gameStarted &&
+            !this.world.gameOver &&
+            !this.world.gameWon
+        );
+    }
+    // #endregion
+    
     // #region Actions
     /**
      * Makes the character jump by setting vertical speed.
      */
     jump() {
         this.speedY = 30;
+        if (this.world) this.world.audioManager.play("jump");
     }
 
     /**
@@ -191,7 +230,9 @@ export class Character extends MovableObject {
             this.y + 100,
             this.otherDirection,
         );
+        bottle.world = this.world;
         this.world.throwableObjects.push(bottle);
+        this.world.audioManager.play("bottleShot");
     }
 
     /**

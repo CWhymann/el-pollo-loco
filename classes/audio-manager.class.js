@@ -43,6 +43,11 @@ export class AudioManager {
     }
     // #endregion
 
+    /** Stops all currently loaded sounds. */
+    stopAll() {
+        Object.keys(this.sounds).forEach((key) => this.stop(key));
+    }
+    
     // #region Mute Logic
     /** Toggles mute for all sounds. */
     toggleMute() {

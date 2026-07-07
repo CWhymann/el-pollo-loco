@@ -93,8 +93,10 @@ export class ChickenSmall extends MovableObject {
         if (this.isDead() && !this.isDying) this.die();
     }
     /** Marks the chicken as dying and schedules its removal. */
+    /** Marks the chicken as dying and schedules its removal. */
     die() {
         this.isDying = true;
+        if (this.world) this.world.audioManager.play("chickenDead2");
         this.deleteTimeoutId = IntervalHub.startInterval(() => {
             this.markedForDeletion = true;
             this.stop();

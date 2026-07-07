@@ -54,6 +54,7 @@ export class World {
         this.character.world = this;
 
         this.audioManager.loadMuteState();
+        this.loadSounds();
         this.bottleBar.setPercentage(0);
         this.coinBar.setPercentage(0);
 
@@ -86,9 +87,83 @@ export class World {
             });
         }
 
+        const muteButton = document.getElementById("mute-button");
+        if (muteButton) {
+            muteButton.textContent = this.audioManager.isMuted ? "🔇" : "🔊";
+            muteButton.addEventListener("click", () => {
+                this.audioManager.toggleMute();
+                muteButton.textContent = this.audioManager.isMuted
+                    ? "🔇"
+                    : "🔊";
+            });
+        }
+
         this.canvas.addEventListener("click", (e) => this.handleCanvasClick(e));
         this.draw();
         this.spawnBottle();
+    }
+    // #endregion
+
+    // #region Sound Setup
+    /** Loads all game sounds into the AudioManager. */
+    loadSounds() {
+        this.audioManager.loadSound(
+            "jump",
+            "assets/audio/EPL_sounds/sounds/character/characterJump.wav",
+        );
+        this.audioManager.loadSound(
+            "run",
+            "assets/audio/EPL_sounds/sounds/character/characterRun.mp3",
+            true,
+        );
+        this.audioManager.loadSound(
+            "damage",
+            "assets/audio/EPL_sounds/sounds/character/characterDamage.mp3",
+        );
+        this.audioManager.loadSound(
+            "characterDead",
+            "assets/audio/EPL_sounds/sounds/character/characterDead.wav",
+        );
+        this.audioManager.loadSound(
+            "snoring",
+            "assets/audio/EPL_sounds/sounds/character/characterSnoring.mp3",
+        );
+        this.audioManager.loadSound(
+            "chickenDead",
+            "assets/audio/EPL_sounds/sounds/chicken/chickenDead.mp3",
+        );
+        this.audioManager.loadSound(
+            "chickenDead2",
+            "assets/audio/EPL_sounds/sounds/chicken/chickenDead2.mp3",
+        );
+        this.audioManager.loadSound(
+            "chickenKnockout",
+            "assets/audio/EPL_sounds/sounds/chicken/chickenKnockout.wav",
+        );
+        this.audioManager.loadSound(
+            "coin",
+            "assets/audio/EPL_sounds/sounds/collectibles/collectSound.wav",
+        );
+        this.audioManager.loadSound(
+            "bottlePickup",
+            "assets/audio/EPL_sounds/sounds/collectibles/bottleCollectSound.wav",
+        );
+        this.audioManager.loadSound(
+            "endbossApproach",
+            "assets/audio/EPL_sounds/sounds/endboss/endbossApproach.wav",
+        );
+        this.audioManager.loadSound(
+            "gameStart",
+            "assets/audio/EPL_sounds/sounds/game/gameStart.mp3",
+        );
+        this.audioManager.loadSound(
+            "bottleBreak",
+            "assets/audio/EPL_sounds/sounds/throwable/bottleBreak.mp3",
+        );
+        this.audioManager.loadSound(
+            "bottleShot",
+            "assets/audio/EPL_sounds/sounds/throwable/bottleShot.wav",
+        );
     }
     // #endregion
 
@@ -113,11 +188,11 @@ export class World {
         this.totalCoins = this.level.coins.length;
         this.totalBottles = this.level.bottles.length;
         this.level.enemies.forEach((enemy) => {
-            if (enemy instanceof Endboss) {
-                enemy.world = this;
-            }
+            enemy.world = this;
         });
+
         this.gameStarted = true;
+        this.audioManager.play("gameStart");
         const startScreen = document.getElementById("start-screen");
         if (startScreen) startScreen.style.display = "none";
         const gameUi = document.getElementById("game-ui");
@@ -146,15 +221,16 @@ export class World {
         this.coinBar.setPercentage(0);
 
         this.throwableObjects = [];
+
         this.level = createLevel1();
         this.totalCoins = this.level.coins.length;
         this.totalBottles = this.level.bottles.length;
         this.level.enemies.forEach((enemy) => {
-            if (enemy instanceof Endboss) enemy.world = this;
+            enemy.world = this;
         });
 
         this.spawnBottle();
-
+        this.audioManager.play("gameStart");
         const gameOverScreen = document.getElementById("game-over-screen");
         const winScreen = document.getElementById("win-screen");
         if (gameOverScreen) gameOverScreen.style.display = "none";
@@ -165,6 +241,7 @@ export class World {
      */
     returnToStart() {
         IntervalHub.stopAllIntervals();
+        this.audioManager.stopAll();
         this.gameStarted = false;
         this.gameOver = false;
         this.gameWon = false;
@@ -303,8 +380,9 @@ export class World {
     /** Checks endboss contact. */
     checkEndbossContact() {
         const endboss = this.level.enemies.find((e) => e instanceof Endboss);
-        if (endboss && this.character.x > 1800) {
+        if (endboss && this.character.x > 1800 && !endboss.hadFirstContact) {
             endboss.hadFirstContact = true;
+            this.audioManager.play("endbossApproach");
         }
     }
 
@@ -324,10 +402,12 @@ export class World {
                 if (
                     enemy instanceof ChickenSmall &&
                     this.character.isAboveGround() &&
-                    this.character.speedY < 0
+                    this.character.speedY < 0 &&
+                    !enemy.isKnockedOut
                 ) {
                     enemy.isKnockedOut = true;
                     enemy.knockedOutTime = new Date().getTime();
+                    this.audioManager.play("chickenKnockout");
                 } else if (
                     !(enemy instanceof Endboss) &&
                     !(enemy instanceof ChickenSmall) &&
@@ -343,11 +423,13 @@ export class World {
                 ) {
                     this.character.hit();
                     this.healthBar.setPercentage(this.character.energy);
+                    this.audioManager.play("damage");
                 }
             }
         });
-        if (this.character.isDead()) {
+        if (this.character.isDead() && !this.gameOver) {
             this.gameOver = true;
+            this.audioManager.play("characterDead");
         }
     }
 
@@ -363,6 +445,7 @@ export class World {
                         this.totalCoins,
                     ),
                 );
+                this.audioManager.play("coin");
             }
         });
     }
@@ -378,6 +461,7 @@ export class World {
                         this.totalBottles,
                     ),
                 );
+                this.audioManager.play("bottlePickup");
                 return false;
             }
             return true;
@@ -404,6 +488,7 @@ export class World {
                 if (bottle.isColliding(enemy) && !bottle.thrown) {
                     bottle.thrown = true;
                     enemy.hit();
+                    this.audioManager.play("bottleBreak");
                 }
             });
         });

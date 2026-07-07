@@ -28,6 +28,7 @@ export class ThrowableObject extends MovableObject {
     otherDirection = false;
     moveIntervalId = null;
     // #endregion
+
     // #region Constructor
     /**
      * @param {number} x - Starting x position.
@@ -45,6 +46,7 @@ export class ThrowableObject extends MovableObject {
         this.throw();
     }
     // #endregion
+
     // #region Logic
     /** @returns {boolean} */
     isAboveGround() {
@@ -61,9 +63,13 @@ export class ThrowableObject extends MovableObject {
             } else {
                 this.playAnimation(IMAGES_SPLASH);
             }
-            if (this.y >= 360) this.thrown = true;
+            if (this.y >= 360 && !this.thrown) {
+                this.thrown = true;
+                if (this.world) this.world.audioManager.play("bottleBreak");
+            }
         }, 1000 / 25);
     }
+
     /** Stops all intervals for this bottle. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
