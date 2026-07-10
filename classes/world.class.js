@@ -9,6 +9,7 @@ import { ChickenSmall } from "../classes/chicken-small.class.js";
 import { Bottle } from "../classes/bottle.class.js";
 import { StartScreenChicken } from "../classes/start-screen-chicken.class.js";
 import { ControlsDialog } from "../classes/controls-dialog.class.js";
+import { SettingsDialog } from "../classes/settings-dialog.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
 
 /**
@@ -33,6 +34,9 @@ export class World {
     startScreenChicken = new StartScreenChicken();
     controlsDialog = new ControlsDialog();
     controlsDialogVisible = false;
+    settingsDialog = new SettingsDialog();
+    settingsDialogVisible = false;
+    draggingSlider = null;
     gameOver = false;
     gameOverScreen = new GameOverScreen();
     gameWon = false;
@@ -53,6 +57,7 @@ export class World {
         this.ctx = ctx;
         this.character.world = this;
 
+        this.audioManager.loadVolumeState();
         this.audioManager.loadMuteState();
         this.loadSounds();
         this.audioManager.play("background");
@@ -88,6 +93,18 @@ export class World {
             });
         }
 
+        const settingsButton = document.getElementById("settings-button");
+        if (settingsButton) {
+            settingsButton.addEventListener("click", () => {
+                this.settingsDialog.musicVolume = this.audioManager.musicVolume;
+                this.settingsDialog.effectsVolume =
+                    this.audioManager.effectsVolume;
+                this.settingsDialogVisible = true;
+                if (startScreenElement)
+                    startScreenElement.style.visibility = "hidden";
+            });
+        }
+
         const muteButton = document.getElementById("mute-button");
         if (muteButton) {
             muteButton.textContent = this.audioManager.isMuted ? "🔇" : "🔊";
@@ -100,6 +117,14 @@ export class World {
         }
 
         this.canvas.addEventListener("click", (e) => this.handleCanvasClick(e));
+        this.canvas.addEventListener("mousedown", (e) =>
+            this.handleCanvasMouseDown(e),
+        );
+        this.canvas.addEventListener("mousemove", (e) =>
+            this.handleCanvasMouseMove(e),
+        );
+        window.addEventListener("mouseup", () => this.handleCanvasMouseUp());
+
         this.draw();
         this.spawnBottle();
     }
@@ -154,8 +179,12 @@ export class World {
             "assets/audio/EPL_sounds/sounds/endboss/endbossApproach.wav",
         );
         this.audioManager.loadSound(
+            "endbossHurt",
+            "assets/audio/EPL_sounds/sounds/endboss/endbossHurt.mp3",
+        );
+        this.audioManager.loadSound(
             "endbossDead",
-            "assets/audio/EPL_sounds/sounds/endboss/endbossDead.wav",
+            "assets/audio/EPL_sounds/sounds/endboss/grillen.mp3",
         );
         this.audioManager.loadSound(
             "gameWin",
@@ -164,6 +193,7 @@ export class World {
         this.audioManager.loadSound(
             "background",
             "assets/audio/EPL_sounds/sounds/game/backgroundMusic.mp3",
+            true,
             true,
         );
         this.audioManager.loadSound(
@@ -284,6 +314,7 @@ export class World {
             this.addToMap(this.startScreen);
             this.addToMap(this.startScreenChicken);
             if (this.controlsDialogVisible) this.addToMap(this.controlsDialog);
+            if (this.settingsDialogVisible) this.addToMap(this.settingsDialog);
             requestAnimationFrame(() => this.draw());
             return;
         }
@@ -334,6 +365,7 @@ export class World {
         this.addToMap(this.healthBar);
         this.addToMap(this.bottleBar);
         this.addToMap(this.coinBar);
+        if (this.settingsDialogVisible) this.addToMap(this.settingsDialog);
 
         requestAnimationFrame(() => this.draw());
     }
@@ -371,17 +403,89 @@ export class World {
      * @param {MouseEvent} e - The click event.
      */
     handleCanvasClick(e) {
-        if (!this.controlsDialogVisible) return;
+        if (!this.controlsDialogVisible && !this.settingsDialogVisible) return;
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
         const px = (e.clientX - rect.left) * scaleX;
         const py = (e.clientY - rect.top) * scaleY;
-        if (
-            this.controlsDialog.isCloseHit(px, py) ||
-            this.controlsDialog.isOutsideBox(px, py)
-        ) {
-            this.controlsDialogVisible = false;
+
+        if (this.controlsDialogVisible) {
+            this.tryCloseDialog(
+                this.controlsDialog,
+                px,
+                py,
+                "controlsDialogVisible",
+            );
+        }
+        if (this.settingsDialogVisible) {
+            this.tryCloseDialog(
+                this.settingsDialog,
+                px,
+                py,
+                "settingsDialogVisible",
+            );
+        }
+    }
+
+    /**
+     * Converts a mouse event's screen coordinates into canvas-space coordinates.
+     * @param {MouseEvent} e - The mouse event.
+     * @returns {{x: number, y: number}} The point in canvas space.
+     */
+    getCanvasCoords(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY,
+        };
+    }
+    /**
+     * Starts dragging a slider knob if the mouse-down hit one.
+     * @param {MouseEvent} e - The mouse event.
+     */
+    handleCanvasMouseDown(e) {
+        if (!this.settingsDialogVisible) return;
+        const { x, y } = this.getCanvasCoords(e);
+        if (this.settingsDialog.isMusicSliderHit(x, y)) {
+            this.draggingSlider = "music";
+        } else if (this.settingsDialog.isEffectsSliderHit(x, y)) {
+            this.draggingSlider = "effects";
+        }
+    }
+    /**
+     * Updates the currently dragged slider's value based on mouse position.
+     * @param {MouseEvent} e - The mouse event.
+     */
+    handleCanvasMouseMove(e) {
+        if (!this.draggingSlider) return;
+        const { x } = this.getCanvasCoords(e);
+        const value = this.settingsDialog.getValueFromX(x);
+        if (this.draggingSlider === "music") {
+            this.settingsDialog.musicVolume = value;
+            this.audioManager.setMusicVolume(value);
+        } else if (this.draggingSlider === "effects") {
+            this.settingsDialog.effectsVolume = value;
+            this.audioManager.setEffectsVolume(value);
+        }
+    }
+    /** Stops dragging any slider. */
+    handleCanvasMouseUp() {
+        this.draggingSlider = null;
+    }
+
+    /**
+     * Closes a dialog if the click hit its close icon or landed outside its box.
+     * @param {ControlsDialog|SettingsDialog} dialog - The dialog to check.
+     * @param {number} px - x coordinate in canvas space.
+     * @param {number} py - y coordinate in canvas space.
+     * @param {string} visibilityProp - The World property flagging visibility.
+     */
+    tryCloseDialog(dialog, px, py, visibilityProp) {
+        if (dialog.isCloseHit(px, py) || dialog.isOutsideBox(px, py)) {
+            this[visibilityProp] = false;
             const startScreenElement = document.getElementById("start-screen");
             if (startScreenElement)
                 startScreenElement.style.visibility = "visible";
@@ -507,6 +611,9 @@ export class World {
                     bottle.thrown = true;
                     enemy.hit();
                     this.audioManager.play("bottleBreak");
+                    if (enemy instanceof Endboss) {
+                        this.audioManager.play("endbossHurt");
+                    }
                 }
             });
         });

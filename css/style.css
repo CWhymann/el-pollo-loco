@@ -254,6 +254,7 @@ canvas {
 }
 
 #mute-button,
+#settings-button,
 #fullscreen-button {
     padding: 8px 12px;
     font-size: 20px;

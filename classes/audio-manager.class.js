@@ -6,19 +6,27 @@ export class AudioManager {
     // #region Properties
     sounds = {};
     isMuted = false;
+    musicKeys = new Set();
+    musicVolume = 1;
+    effectsVolume = 1;
     // #endregion
 
     // #region Loading
+
     /**
      * @param {string} key - The identifier for the sound.
      * @param {string} path - The path to the audio file.
      * @param {boolean} loop - Whether the sound should loop.
+     * @param {boolean} isMusic - True if this sound belongs to the music channel.
      */
-    loadSound(key, path, loop = false) {
+    loadSound(key, path, loop = false, isMusic = false) {
         const audio = new Audio(path);
         audio.loop = loop;
+        audio.volume = isMusic ? this.musicVolume : this.effectsVolume;
         this.sounds[key] = audio;
+        if (isMusic) this.musicKeys.add(key);
     }
+
     // #endregion
 
     // #region Playback
@@ -69,6 +77,41 @@ export class AudioManager {
         Object.values(this.sounds).forEach((sound) => {
             sound.muted = this.isMuted;
         });
+    }
+    // #endregion
+
+    // #region Volume Control
+    /**
+     * Sets the volume for all music-channel sounds and persists it.
+     * @param {number} value - Volume between 0 and 1.
+     */
+    setMusicVolume(value) {
+        this.musicVolume = value;
+        this.musicKeys.forEach((key) => {
+            this.sounds[key].volume = value;
+        });
+        localStorage.setItem("musicVolume", value);
+    }
+
+    /**
+     * Sets the volume for all effects-channel sounds and persists it.
+     * @param {number} value - Volume between 0 and 1.
+     */
+    setEffectsVolume(value) {
+        this.effectsVolume = value;
+        Object.keys(this.sounds).forEach((key) => {
+            if (!this.musicKeys.has(key)) this.sounds[key].volume = value;
+        });
+        localStorage.setItem("effectsVolume", value);
+    }
+
+    /** Loads stored volume levels from local storage, if present. */
+    loadVolumeState() {
+        const storedMusic = localStorage.getItem("musicVolume");
+        const storedEffects = localStorage.getItem("effectsVolume");
+        if (storedMusic !== null) this.musicVolume = parseFloat(storedMusic);
+        if (storedEffects !== null)
+            this.effectsVolume = parseFloat(storedEffects);
     }
     // #endregion
 }
