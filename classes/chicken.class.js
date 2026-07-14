@@ -1,15 +1,21 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
+
+// #region Image Constants
 const IMAGES_WALKING = [
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/1_w.png",
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/2_w.png",
     "assets/img/3_enemies_chicken/chicken_normal/1_walk/3_w.png",
 ];
+
 const IMAGES_DEAD = [
     "assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png",
 ];
+// #endregion
+
 /**
  * Represents a normal chicken enemy.
+ * Walks left and dies on any hit. Silently dissolves off the left edge.
  */
 // #region class Chicken
 export class Chicken extends MovableObject {
@@ -26,6 +32,7 @@ export class Chicken extends MovableObject {
     animIntervalId = null;
     deleteTimeoutId = null;
     // #endregion
+
     // #region Constructor
     /**
      * @param {number} x - The starting x position.
@@ -39,8 +46,9 @@ export class Chicken extends MovableObject {
         this.animate();
     }
     // #endregion
+
     // #region Logic
-    /** Starts movement and animation via IntervalHub. */
+    /** Registers movement and animation intervals via IntervalHub. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
@@ -51,9 +59,9 @@ export class Chicken extends MovableObject {
             1000 / 8,
         );
     }
+
     /**
-     * Moves the chicken to the left. Dissolves silently once it has
-     * fully walked off the left edge of the level.
+     * Moves the chicken left and removes it silently when it leaves the level.
      */
     handleMovement() {
         if (this.isDying) return;
@@ -63,26 +71,28 @@ export class Chicken extends MovableObject {
             this.stop();
         }
     }
-    /** Handles animation based on state. */
+
+    /** Plays the dead or walking animation depending on current state. */
     handleAnimation() {
-        if (this.isDying) {
-            this.playAnimation(IMAGES_DEAD);
-        } else {
-            this.playAnimation(IMAGES_WALKING);
-        }
+        if (this.isDying) this.playAnimation(IMAGES_DEAD);
+        else this.playAnimation(IMAGES_WALKING);
     }
-    /** Reduces energy and marks the chicken as dying. */
+
+    /**
+     * Instantly kills the chicken, plays the death sound
+     * and schedules its removal after the death animation.
+     */
     hit() {
         this.energy = 0;
         this.isDying = true;
         if (this.world) this.world.audioManager.play("chickenDead");
-        // Timeout über IntervalHub für sauberes Stoppen beim Restart
         this.deleteTimeoutId = IntervalHub.startInterval(() => {
             this.markedForDeletion = true;
-            this.stop(); // Sich selbst stoppen
+            this.stop();
         }, 500);
     }
-    /** Stops all intervals and timeouts for this chicken. */
+
+    /** Stops all active intervals and timeouts for this chicken. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
         if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);

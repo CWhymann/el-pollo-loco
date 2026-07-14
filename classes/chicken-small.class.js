@@ -1,15 +1,22 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
+
+// #region Image Constants
 const IMAGES_WALKING = [
     "assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/2_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
 ];
+
 const IMAGES_DEAD = [
     "assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png",
 ];
+// #endregion
+
 /**
- * Represents a small chicken enemy that can be knocked out.
+ * Represents a small chicken enemy.
+ * Can be stunned by jumping on it or killed by a bottle throw.
+ * Silently dissolves when it walks off the left edge.
  */
 // #region class ChickenSmall
 export class ChickenSmall extends MovableObject {
@@ -29,6 +36,7 @@ export class ChickenSmall extends MovableObject {
     animIntervalId = null;
     deleteTimeoutId = null;
     // #endregion
+
     // #region Constructor
     /**
      * @param {number} x - The starting x position.
@@ -42,8 +50,9 @@ export class ChickenSmall extends MovableObject {
         this.animate();
     }
     // #endregion
+
     // #region Logic
-    /** Starts movement and animation via IntervalHub. */
+    /** Registers movement and animation intervals via IntervalHub. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
@@ -54,21 +63,15 @@ export class ChickenSmall extends MovableObject {
             1000 / 10,
         );
     }
+
     /**
-     * Moves the chicken, handling knock-out physics. Dissolves silently
-     * once it has fully walked off the left edge of the level.
+     * Moves the chicken left, applying wobble physics during knockout.
+     * Removes it silently once it leaves the left edge of the level.
      */
     handleMovement() {
         if (this.isDying) return;
-        if (this.isKnockedOut) {
-            const timePassed = new Date().getTime() - this.knockedOutTime;
-            if (timePassed > this.knockedOutDuration) {
-                this.isKnockedOut = false;
-            } else {
-                this.x -= this.speed * 0.3;
-                this.x += Math.sin(timePassed / 150) * 2;
-            }
-        } else {
+        if (this.isKnockedOut) this.applyKnockoutMovement();
+        else {
             this.x -= this.speed;
             this.y = 380;
         }
@@ -77,23 +80,38 @@ export class ChickenSmall extends MovableObject {
             this.stop();
         }
     }
-    /** Handles animation based on state. */
-    handleAnimation() {
-        if (this.isDying) {
-            this.playAnimation(IMAGES_DEAD);
+
+    /** Applies wobble movement during the knockout stun duration. */
+    applyKnockoutMovement() {
+        const timePassed = new Date().getTime() - this.knockedOutTime;
+        if (timePassed > this.knockedOutDuration) {
+            this.isKnockedOut = false;
         } else {
-            this.playAnimation(IMAGES_WALKING);
+            this.x -= this.speed * 0.3;
+            this.x += Math.sin(timePassed / 150) * 2;
         }
     }
-    /** Reduces energy on hit and triggers death once energy is depleted. */
+
+    /** Plays the dead or walking animation depending on current state. */
+    handleAnimation() {
+        if (this.isDying) this.playAnimation(IMAGES_DEAD);
+        else this.playAnimation(IMAGES_WALKING);
+    }
+
+    /**
+     * Reduces energy by 20 on a bottle hit and triggers death if energy reaches zero.
+     */
     hit() {
         this.energy -= 20;
         if (this.energy < 0) this.energy = 0;
         this.lastHit = new Date().getTime();
         if (this.isDead() && !this.isDying) this.die();
     }
-    /** Marks the chicken as dying and schedules its removal. */
-    /** Marks the chicken as dying and schedules its removal. */
+
+    /**
+     * Marks the chicken as dying, plays the death sound
+     * and schedules its removal after the death animation.
+     */
     die() {
         this.isDying = true;
         if (this.world) this.world.audioManager.play("chickenDead2");
@@ -102,7 +120,8 @@ export class ChickenSmall extends MovableObject {
             this.stop();
         }, 500);
     }
-    /** Stops all intervals for this chicken. */
+
+    /** Stops all active intervals and timeouts for this chicken. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
         if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);

@@ -1,6 +1,7 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
 
+// #region Image Constants
 const IMAGES_WALKING = [
     "assets/img/4_enemie_boss_chicken/1_walk/G1.png",
     "assets/img/4_enemie_boss_chicken/1_walk/G2.png",
@@ -41,9 +42,11 @@ const IMAGES_DEAD = [
     "assets/img/4_enemie_boss_chicken/5_dead/G25.png",
     "assets/img/4_enemie_boss_chicken/5_dead/G26.png",
 ];
+// #endregion
 
 /**
  * Represents the final boss (El Pollo Loco).
+ * Tracks the player, plays phased animations and triggers the win state on death.
  */
 // #region class Endboss
 export class Endboss extends MovableObject {
@@ -64,6 +67,7 @@ export class Endboss extends MovableObject {
     // #endregion
 
     // #region Constructor
+    /** Loads all sprite sheets and starts the animation loop. */
     constructor() {
         super();
         this.loadImage(IMAGES_WALKING[0]);
@@ -77,7 +81,7 @@ export class Endboss extends MovableObject {
     // #endregion
 
     // #region Logic
-    /** Starts movement and animation via IntervalHub. */
+    /** Registers movement and animation intervals via IntervalHub. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
@@ -90,8 +94,8 @@ export class Endboss extends MovableObject {
     }
 
     /**
-     * Moves the boss towards the character's current position,
-     * following in either direction once first contact happened.
+     * Tracks the character and moves towards them once first contact is made.
+     * Flips the sprite to face the character's direction.
      */
     handleMovement() {
         if (!this.hadFirstContact || this.isDead() || !this.world) return;
@@ -105,26 +109,31 @@ export class Endboss extends MovableObject {
         }
     }
 
-    /** Handles animation and death logic. */
-    /** Handles animation and death logic. */
+    /**
+     * Selects the correct animation phase based on the boss's current state.
+     * Triggers the dying sequence exactly once when energy reaches zero.
+     */
     handleAnimation() {
-        if (this.isDying) {
-            return;
-        } else if (this.isDead() && !this.isDying) {
+        if (this.isDying) return;
+        if (this.isDead()) {
             this.isDying = true;
             this.startDyingSequence();
-        } else if (!this.isDead() && this.isHurt()) {
-            this.playAnimation(IMAGES_HURT);
-        } else if (this.hadFirstContact) {
-            this.playAnimation(IMAGES_ATTACK);
-        } else {
-            this.playAnimation(IMAGES_ALERT);
+            return;
         }
+        if (this.isHurt()) {
+            this.playAnimation(IMAGES_HURT);
+            return;
+        }
+        if (this.hadFirstContact) {
+            this.playAnimation(IMAGES_ATTACK);
+            return;
+        }
+        this.playAnimation(IMAGES_ALERT);
     }
 
     /**
-     * Replaces the animation interval with a slower one dedicated
-     * to the dying sequence, plays the sound and schedules removal.
+     * Switches to a slow death animation, plays the death sound
+     * and schedules the win-state trigger after 3 seconds.
      */
     startDyingSequence() {
         if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);
@@ -133,6 +142,11 @@ export class Endboss extends MovableObject {
             1000 / 3,
         );
         if (this.world) this.world.audioManager.play("endbossDead");
+        this.scheduleRemoval();
+    }
+
+    /** Schedules the boss removal and win-state trigger after the death animation. */
+    scheduleRemoval() {
         this.deleteTimeoutId = IntervalHub.startInterval(() => {
             this.markedForDeletion = true;
             if (this.world) {
@@ -143,7 +157,7 @@ export class Endboss extends MovableObject {
         }, 3000);
     }
 
-    /** Stops all intervals and timeouts for the boss. */
+    /** Stops all active intervals and timeouts for this boss. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
         if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);

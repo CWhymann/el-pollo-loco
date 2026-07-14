@@ -2,8 +2,7 @@ import { MovableObject } from "./movable-object.class.js";
 
 /**
  * Represents the in-canvas controls dialog overlay.
- * Explains the keyboard controls and can be closed via the X icon
- * or by clicking outside the dialog box.
+ * Explains keyboard and mobile controls, closable via X or outside click.
  */
 // #region class ControlsDialog
 export class ControlsDialog extends MovableObject {
@@ -21,7 +20,7 @@ export class ControlsDialog extends MovableObject {
 
     // #region Drawing
     /**
-     * Draws the dialog overlay, box, controls list and close icon.
+     * Draws the full dialog: overlay, box, text sections and close icon.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     draw(ctx) {
@@ -31,7 +30,7 @@ export class ControlsDialog extends MovableObject {
         this.drawCloseIcon(ctx);
     }
 
-    /** Draws the darkened background covering the whole canvas. */
+    /** Draws a semi-transparent dark overlay over the whole canvas. */
     drawOverlay(ctx) {
         ctx.save();
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
@@ -39,7 +38,7 @@ export class ControlsDialog extends MovableObject {
         ctx.restore();
     }
 
-    /** Draws the dialog box background and border. */
+    /** Draws the dialog box with dark fill and red border. */
     drawBox(ctx) {
         ctx.save();
         ctx.fillStyle = "rgba(20, 20, 20, 0.95)";
@@ -50,76 +49,78 @@ export class ControlsDialog extends MovableObject {
         ctx.restore();
     }
 
-    /** Draws the title and control key descriptions. */
+    /** Draws the title, keyboard section and mobile section. */
     drawText(ctx) {
         ctx.save();
         ctx.textAlign = "left";
+        this.drawKeyboardSection(ctx);
+        this.drawMobileSection(ctx);
+        ctx.restore();
+    }
+
+    /** Draws the keyboard controls title and key list. */
+    drawKeyboardSection(ctx) {
         ctx.font = "28px Boogaloo";
         ctx.fillStyle = "#e80f2c";
         ctx.fillText("Steuerung", this.boxX + 24, this.boxY + 48);
-
         ctx.font = "16px Arial";
         ctx.fillStyle = "#fff5e0";
-        const keyboardLines = [
+        const lines = [
             "← →  Bewegen",
             "Leertaste  Springen",
             "D  Flasche werfen",
         ];
-        keyboardLines.forEach((line, i) => {
-            ctx.fillText(line, this.boxX + 24, this.boxY + 90 + i * 28);
-        });
+        lines.forEach((line, i) =>
+            ctx.fillText(line, this.boxX + 24, this.boxY + 90 + i * 28),
+        );
+    }
 
+    /** Draws the mobile touch controls title and button list. */
+    drawMobileSection(ctx) {
         ctx.font = "20px Boogaloo";
         ctx.fillStyle = "#e80f2c";
         ctx.fillText("Mobil (Touch)", this.boxX + 24, this.boxY + 200);
-
         ctx.font = "16px Arial";
         ctx.fillStyle = "#fff5e0";
-        const mobileLines = [
-            "◀ ▶  Bewegen",
-            "▲  Springen",
-            "🍶  Flasche werfen",
-        ];
-        mobileLines.forEach((line, i) => {
-            ctx.fillText(line, this.boxX + 24, this.boxY + 232 + i * 26);
-        });
-        ctx.restore();
+        const lines = ["◀ ▶  Bewegen", "▲  Springen", "🍶  Flasche werfen"];
+        lines.forEach((line, i) =>
+            ctx.fillText(line, this.boxX + 24, this.boxY + 232 + i * 26),
+        );
     }
 
-    /** Draws the close (X) icon in the top-right corner of the box. */
+    /** Draws the X close icon in the top-right corner of the box. */
     drawCloseIcon(ctx) {
+        const cx = this.getCloseX();
+        const cy = this.getCloseY();
         ctx.save();
         ctx.strokeStyle = "#fff5e0";
         ctx.lineWidth = 3;
-        const cx = this.getCloseX();
-        const cy = this.getCloseY();
-        const half = this.closeSize;
         ctx.beginPath();
-        ctx.moveTo(cx - half, cy - half);
-        ctx.lineTo(cx + half, cy + half);
-        ctx.moveTo(cx + half, cy - half);
-        ctx.lineTo(cx - half, cy + half);
+        ctx.moveTo(cx - this.closeSize, cy - this.closeSize);
+        ctx.lineTo(cx + this.closeSize, cy + this.closeSize);
+        ctx.moveTo(cx + this.closeSize, cy - this.closeSize);
+        ctx.lineTo(cx - this.closeSize, cy + this.closeSize);
         ctx.stroke();
         ctx.restore();
     }
     // #endregion
 
     // #region Hit Testing
-    /** @returns {number} The x-center of the close icon. */
+    /** @returns {number} The x-centre of the close icon. */
     getCloseX() {
         return this.boxX + this.boxWidth - 24;
     }
 
-    /** @returns {number} The y-center of the close icon. */
+    /** @returns {number} The y-centre of the close icon. */
     getCloseY() {
         return this.boxY + 24;
     }
 
     /**
-     * Checks if a canvas-space point hits the close icon.
+     * Returns true if the given point is within the close icon's hit area.
      * @param {number} px - x coordinate in canvas space.
      * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point is within the close icon area.
+     * @returns {boolean}
      */
     isCloseHit(px, py) {
         const cx = this.getCloseX();
@@ -129,10 +130,10 @@ export class ControlsDialog extends MovableObject {
     }
 
     /**
-     * Checks if a canvas-space point is outside the dialog box.
+     * Returns true if the given point is outside the dialog box.
      * @param {number} px - x coordinate in canvas space.
      * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point is outside the box.
+     * @returns {boolean}
      */
     isOutsideBox(px, py) {
         return (

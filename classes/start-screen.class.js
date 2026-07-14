@@ -1,7 +1,7 @@
 import { MovableObject } from "./movable-object.class.js";
 
 /**
- * Represents the game start screen overlay.
+ * Represents the game start screen overlay image.
  */
 // #region class StartScreen
 export class StartScreen extends MovableObject {
@@ -13,9 +13,7 @@ export class StartScreen extends MovableObject {
     // #endregion
 
     // #region Constructor
-    /**
-     * Creates the start screen.
-     */
+    /** Loads the start screen image. */
     constructor() {
         super();
         this.loadImage(

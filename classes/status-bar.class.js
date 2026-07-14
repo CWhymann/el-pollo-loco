@@ -1,5 +1,6 @@
 import { MovableObject } from "./movable-object.class.js";
 
+// #region Image Constants
 const IMAGES_HEALTH = [
     "assets/img/7_statusbars/1_statusbar/2_statusbar_health/green/0.png",
     "assets/img/7_statusbars/1_statusbar/2_statusbar_health/green/20.png",
@@ -26,9 +27,11 @@ const IMAGES_COIN = [
     "assets/img/7_statusbars/1_statusbar/1_statusbar_coin/green/80.png",
     "assets/img/7_statusbars/1_statusbar/1_statusbar_coin/green/100.png",
 ];
+// #endregion
 
 /**
- * Represents a status bar (health, bottle or coin).
+ * Represents a HUD status bar for health, bottles or coins.
+ * Displays one of six pre-rendered images based on the current percentage.
  */
 // #region class StatusBar
 export class StatusBar extends MovableObject {
@@ -41,24 +44,25 @@ export class StatusBar extends MovableObject {
 
     // #region Constructor
     /**
-     * @param {number} x - The x position.
-     * @param {number} y - The y position.
-     * @param {string} type - 'health', 'bottle' or 'coin'.
+     * @param {number} x - The x position on the canvas.
+     * @param {number} y - The y position on the canvas.
+     * @param {string} type - Bar type: 'health', 'bottle' or 'coin'.
      */
     constructor(x, y, type) {
         super();
+        this.x = x;
+        this.y = y;
         this.images = this.getImagesByType(type);
         this.loadImages(this.images);
         this.setPercentage(100);
-        this.x = x;
-        this.y = y;
     }
     // #endregion
 
     // #region Logic
     /**
-     * @param {string} type
-     * @returns {string[]}
+     * Returns the correct image array for the given bar type.
+     * @param {string} type - 'health', 'bottle' or 'coin'.
+     * @returns {string[]} Array of image paths for the bar type.
      */
     getImagesByType(type) {
         if (type === "health") return IMAGES_HEALTH;
@@ -67,15 +71,18 @@ export class StatusBar extends MovableObject {
     }
 
     /**
-     * @param {number} percentage
+     * Updates the displayed image to match the given percentage.
+     * @param {number} percentage - Value between 0 and 100.
      */
     setPercentage(percentage) {
         this.percentage = percentage;
-        const index = this.resolveImageIndex();
-        this.img = this.imageCache[this.images[index]];
+        this.img = this.imageCache[this.images[this.resolveImageIndex()]];
     }
 
-    /** @returns {number} */
+    /**
+     * Maps the current percentage to one of six image indices (0–5).
+     * @returns {number} Index of the image to display.
+     */
     resolveImageIndex() {
         if (this.percentage >= 100) return 5;
         if (this.percentage >= 80) return 4;

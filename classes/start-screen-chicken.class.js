@@ -1,12 +1,17 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
+
+// #region Image Constants
 const IMAGES_WALKING = [
     "assets/img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/2_w.png",
     "assets/img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
 ];
+// #endregion
+
 /**
  * Represents the animated chicken on the start screen.
+ * Bounces left and right as a decorative element.
  */
 // #region class StartScreenChicken
 export class StartScreenChicken extends MovableObject {
@@ -21,7 +26,9 @@ export class StartScreenChicken extends MovableObject {
     moveIntervalId = null;
     animIntervalId = null;
     // #endregion
+
     // #region Constructor
+    /** Loads walking sprites and starts the bounce animation. */
     constructor() {
         super();
         this.loadImage(IMAGES_WALKING[0]);
@@ -29,8 +36,9 @@ export class StartScreenChicken extends MovableObject {
         this.animate();
     }
     // #endregion
+
     // #region Logic
-    /** Starts movement and animation via IntervalHub. */
+    /** Registers persistent movement and animation intervals. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
@@ -43,7 +51,8 @@ export class StartScreenChicken extends MovableObject {
             "persistent",
         );
     }
-    /** Moves the chicken from left to right with a hop effect. */
+
+    /** Moves the chicken horizontally with a sinusoidal hop effect. */
     handleMovement() {
         this.x += this.speed;
         this.jumpHeight += 0.15;
@@ -57,7 +66,8 @@ export class StartScreenChicken extends MovableObject {
             this.otherDirection = true;
         }
     }
-    /** Stops all intervals for this chicken. */
+
+    /** Stops all active intervals for this chicken. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
         if (this.animIntervalId) IntervalHub.stopInterval(this.animIntervalId);

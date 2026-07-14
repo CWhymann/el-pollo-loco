@@ -2,8 +2,8 @@ import { MovableObject } from "./movable-object.class.js";
 
 /**
  * Represents the in-canvas settings dialog overlay.
- * Lets the player adjust music and effects volume independently,
- * and can be closed via the X icon or by clicking outside the box.
+ * Lets the player adjust music and effects volume independently.
+ * Closable via the X icon or by clicking outside the box.
  */
 // #region class SettingsDialog
 export class SettingsDialog extends MovableObject {
@@ -26,7 +26,7 @@ export class SettingsDialog extends MovableObject {
 
     // #region Drawing
     /**
-     * Draws the dialog overlay, box, sliders and close icon.
+     * Draws the full dialog: overlay, box, title, sliders and close icon.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     draw(ctx) {
@@ -43,7 +43,7 @@ export class SettingsDialog extends MovableObject {
         this.drawCloseIcon(ctx);
     }
 
-    /** Draws the darkened background covering the whole canvas. */
+    /** Draws a semi-transparent dark overlay over the whole canvas. */
     drawOverlay(ctx) {
         ctx.save();
         ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
@@ -51,7 +51,7 @@ export class SettingsDialog extends MovableObject {
         ctx.restore();
     }
 
-    /** Draws the dialog box background and border. */
+    /** Draws the dialog box with dark fill and red border. */
     drawBox(ctx) {
         ctx.save();
         ctx.fillStyle = "rgba(20, 20, 20, 0.95)";
@@ -62,7 +62,7 @@ export class SettingsDialog extends MovableObject {
         ctx.restore();
     }
 
-    /** Draws the dialog title. */
+    /** Draws the dialog title "Lautstärke". */
     drawTitle(ctx) {
         ctx.save();
         ctx.textAlign = "left";
@@ -73,11 +73,11 @@ export class SettingsDialog extends MovableObject {
     }
 
     /**
-     * Draws a single labeled slider track and its knob.
+     * Draws a labeled slider: track, filled portion and knob.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
-     * @param {number} sliderY - The y-position of this slider's track.
-     * @param {number} value - Current volume value (0 to 1).
-     * @param {string} label - Label text shown above the slider.
+     * @param {number} sliderY - Vertical position of the slider track.
+     * @param {number} value - Current volume value between 0 and 1.
+     * @param {string} label - Label shown above the slider.
      */
     drawSlider(ctx, sliderY, value, label) {
         const sliderX = this.getSliderX();
@@ -85,10 +85,15 @@ export class SettingsDialog extends MovableObject {
         ctx.font = "16px Arial";
         ctx.fillStyle = "#fff5e0";
         ctx.fillText(label, sliderX, sliderY - 14);
+        this.drawSliderTrack(ctx, sliderX, sliderY, value);
+        this.drawSliderKnob(ctx, sliderX, sliderY, value);
+        ctx.restore();
+    }
 
+    /** Draws the grey background track and red filled portion of a slider. */
+    drawSliderTrack(ctx, sliderX, sliderY, value) {
         ctx.fillStyle = "#555";
         ctx.fillRect(sliderX, sliderY, this.sliderWidth, this.sliderHeight);
-
         ctx.fillStyle = "#f30f31";
         ctx.fillRect(
             sliderX,
@@ -96,29 +101,30 @@ export class SettingsDialog extends MovableObject {
             this.sliderWidth * value,
             this.sliderHeight,
         );
+    }
 
+    /** Draws the round knob at the current value position of a slider. */
+    drawSliderKnob(ctx, sliderX, sliderY, value) {
         const knobX = sliderX + this.sliderWidth * value;
         const knobY = sliderY + this.sliderHeight / 2;
         ctx.beginPath();
         ctx.arc(knobX, knobY, this.knobRadius, 0, Math.PI * 2);
         ctx.fillStyle = "#fff5e0";
         ctx.fill();
-        ctx.restore();
     }
 
-    /** Draws the close (X) icon in the top-right corner of the box. */
+    /** Draws the X close icon in the top-right corner of the box. */
     drawCloseIcon(ctx) {
+        const cx = this.getCloseX();
+        const cy = this.getCloseY();
         ctx.save();
         ctx.strokeStyle = "#fff5e0";
         ctx.lineWidth = 3;
-        const cx = this.getCloseX();
-        const cy = this.getCloseY();
-        const half = this.closeSize;
         ctx.beginPath();
-        ctx.moveTo(cx - half, cy - half);
-        ctx.lineTo(cx + half, cy + half);
-        ctx.moveTo(cx + half, cy - half);
-        ctx.lineTo(cx - half, cy + half);
+        ctx.moveTo(cx - this.closeSize, cy - this.closeSize);
+        ctx.lineTo(cx + this.closeSize, cy + this.closeSize);
+        ctx.moveTo(cx + this.closeSize, cy - this.closeSize);
+        ctx.lineTo(cx - this.closeSize, cy + this.closeSize);
         ctx.stroke();
         ctx.restore();
     }
@@ -126,10 +132,10 @@ export class SettingsDialog extends MovableObject {
 
     // #region Hit Testing
     /**
-     * Checks if a canvas-space point hits the close icon.
-     * @param {number} px - x coordinate in canvas space.
-     * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point is within the close icon area.
+     * Returns true if the point is within the close icon's hit area.
+     * @param {number} px - x in canvas space.
+     * @param {number} py - y in canvas space.
+     * @returns {boolean}
      */
     isCloseHit(px, py) {
         const cx = this.getCloseX();
@@ -139,10 +145,10 @@ export class SettingsDialog extends MovableObject {
     }
 
     /**
-     * Checks if a canvas-space point is outside the dialog box.
-     * @param {number} px - x coordinate in canvas space.
-     * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point is outside the box.
+     * Returns true if the point lies outside the dialog box.
+     * @param {number} px - x in canvas space.
+     * @param {number} py - y in canvas space.
+     * @returns {boolean}
      */
     isOutsideBox(px, py) {
         return (
@@ -154,33 +160,31 @@ export class SettingsDialog extends MovableObject {
     }
 
     /**
-     * Checks if a canvas-space point is near the music slider's knob area.
-     * @param {number} px - x coordinate in canvas space.
-     * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point hits the music slider.
+     * Returns true if the point is within the music slider's grab area.
+     * @param {number} px - x in canvas space.
+     * @param {number} py - y in canvas space.
+     * @returns {boolean}
      */
     isMusicSliderHit(px, py) {
         return this.isSliderHit(px, py, this.getMusicSliderY());
     }
 
     /**
-     * Checks if a canvas-space point is near the effects slider's knob area.
-     * @param {number} px - x coordinate in canvas space.
-     * @param {number} py - y coordinate in canvas space.
-     * @returns {boolean} True if the point hits the effects slider.
+     * Returns true if the point is within the effects slider's grab area.
+     * @param {number} px - x in canvas space.
+     * @param {number} py - y in canvas space.
+     * @returns {boolean}
      */
     isEffectsSliderHit(px, py) {
         return this.isSliderHit(px, py, this.getEffectsSliderY());
     }
 
     /**
-     * Generic check whether a point is close enough to a slider track
-     * (vertically) to count as grabbing its knob, regardless of x-position
-     * along the track.
-     * @param {number} px - x coordinate in canvas space.
-     * @param {number} py - y coordinate in canvas space.
-     * @param {number} sliderY - The y-position of the slider track.
-     * @returns {boolean} True if the point is within the slider's grab area.
+     * Returns true if the point is close enough to the given slider track to grab it.
+     * @param {number} px - x in canvas space.
+     * @param {number} py - y in canvas space.
+     * @param {number} sliderY - y position of the slider track.
+     * @returns {boolean}
      */
     isSliderHit(px, py, sliderY) {
         const sliderX = this.getSliderX();
@@ -194,40 +198,38 @@ export class SettingsDialog extends MovableObject {
     }
 
     /**
-     * Converts a canvas-space x position into a slider value between 0 and 1.
-     * @param {number} px - x coordinate in canvas space.
-     * @returns {number} The resulting value, clamped between 0 and 1.
+     * Converts a canvas x position into a clamped volume value between 0 and 1.
+     * @param {number} px - x in canvas space.
+     * @returns {number}
      */
     getValueFromX(px) {
-        const sliderX = this.getSliderX();
-        const raw = (px - sliderX) / this.sliderWidth;
+        const raw = (px - this.getSliderX()) / this.sliderWidth;
         return Math.min(1, Math.max(0, raw));
     }
     // #endregion
-    // #endregion
 
     // #region Layout Helpers
-    /** @returns {number} The shared x-position where sliders start. */
+    /** @returns {number} x position where slider tracks begin. */
     getSliderX() {
         return this.boxX + 24;
     }
 
-    /** @returns {number} The y-position of the music slider track. */
+    /** @returns {number} y position of the music slider track. */
     getMusicSliderY() {
         return this.boxY + 90;
     }
 
-    /** @returns {number} The y-position of the effects slider track. */
+    /** @returns {number} y position of the effects slider track. */
     getEffectsSliderY() {
         return this.boxY + 150;
     }
 
-    /** @returns {number} The x-center of the close icon. */
+    /** @returns {number} x centre of the close icon. */
     getCloseX() {
         return this.boxX + this.boxWidth - 24;
     }
 
-    /** @returns {number} The y-center of the close icon. */
+    /** @returns {number} y centre of the close icon. */
     getCloseY() {
         return this.boxY + 24;
     }

@@ -1,7 +1,7 @@
 import { MovableObject } from "./movable-object.class.js";
 
 /**
- * Represents the game over screen overlay.
+ * Represents the game-over screen overlay.
  */
 // #region class GameOverScreen
 export class GameOverScreen extends MovableObject {
@@ -13,12 +13,10 @@ export class GameOverScreen extends MovableObject {
     // #endregion
 
     // #region Constructor
-    /**
-     * Creates the game over screen.
-     */
+    /** Loads the game-over screen image. */
     constructor() {
         super();
-        this.loadImage("assets/img/You won, you lost/You lost.png");
+        this.loadImage("assets/img/You won, you lost/You lost b.png");
     }
     // #endregion
 }

@@ -1,5 +1,6 @@
 /**
- * Manages all game audio, including sound effects and mute state.
+ * Manages all game audio: loading, playback, mute state and volume channels.
+ * Separates sounds into a music channel and an effects channel.
  */
 // #region class AudioManager
 export class AudioManager {
@@ -12,12 +13,13 @@ export class AudioManager {
     // #endregion
 
     // #region Loading
-
     /**
-     * @param {string} key - The identifier for the sound.
-     * @param {string} path - The path to the audio file.
-     * @param {boolean} loop - Whether the sound should loop.
-     * @param {boolean} isMusic - True if this sound belongs to the music channel.
+     * Creates an Audio element, assigns it to the sounds registry
+     * and registers it in the music channel if flagged as music.
+     * @param {string} key - Unique identifier for this sound.
+     * @param {string} path - File path to the audio asset.
+     * @param {boolean} loop - Whether the sound should loop continuously.
+     * @param {boolean} isMusic - True to assign this sound to the music channel.
      */
     loadSound(key, path, loop = false, isMusic = false) {
         const audio = new Audio(path);
@@ -26,12 +28,12 @@ export class AudioManager {
         this.sounds[key] = audio;
         if (isMusic) this.musicKeys.add(key);
     }
-
     // #endregion
 
     // #region Playback
     /**
-     * @param {string} key - The identifier for the sound.
+     * Plays a sound from the start, unless the game is muted or the key is unknown.
+     * @param {string} key - The identifier of the sound to play.
      */
     play(key) {
         if (!this.isMuted && this.sounds[key]) {
@@ -41,7 +43,8 @@ export class AudioManager {
     }
 
     /**
-     * @param {string} key - The identifier for the sound.
+     * Pauses a sound and resets it to the beginning.
+     * @param {string} key - The identifier of the sound to stop.
      */
     stop(key) {
         if (this.sounds[key]) {
@@ -49,20 +52,20 @@ export class AudioManager {
             this.sounds[key].currentTime = 0;
         }
     }
-    // #endregion
 
     /**
-     * Stops all currently loaded sounds, except any keys listed to exclude.
-     * @param {string[]} exclude - Sound keys that should keep playing.
+     * Stops all registered sounds, optionally keeping some playing.
+     * @param {string[]} exclude - Keys of sounds that should keep playing.
      */
     stopAll(exclude = []) {
         Object.keys(this.sounds).forEach((key) => {
             if (!exclude.includes(key)) this.stop(key);
         });
     }
+    // #endregion
 
-    // #region Mute Logic
-    /** Toggles mute for all sounds. */
+    // #region Mute
+    /** Toggles global mute on/off and persists the state in localStorage. */
     toggleMute() {
         this.isMuted = !this.isMuted;
         Object.values(this.sounds).forEach((sound) => {
@@ -71,7 +74,7 @@ export class AudioManager {
         localStorage.setItem("muted", this.isMuted);
     }
 
-    /** Loads the mute state from local storage. */
+    /** Restores the mute state from localStorage and applies it to all sounds. */
     loadMuteState() {
         this.isMuted = localStorage.getItem("muted") === "true";
         Object.values(this.sounds).forEach((sound) => {
@@ -82,8 +85,8 @@ export class AudioManager {
 
     // #region Volume Control
     /**
-     * Sets the volume for all music-channel sounds and persists it.
-     * @param {number} value - Volume between 0 and 1.
+     * Sets the volume for all music-channel sounds and persists the value.
+     * @param {number} value - Volume level between 0 (silent) and 1 (full).
      */
     setMusicVolume(value) {
         this.musicVolume = value;
@@ -94,8 +97,8 @@ export class AudioManager {
     }
 
     /**
-     * Sets the volume for all effects-channel sounds and persists it.
-     * @param {number} value - Volume between 0 and 1.
+     * Sets the volume for all effects-channel sounds and persists the value.
+     * @param {number} value - Volume level between 0 (silent) and 1 (full).
      */
     setEffectsVolume(value) {
         this.effectsVolume = value;
@@ -105,7 +108,7 @@ export class AudioManager {
         localStorage.setItem("effectsVolume", value);
     }
 
-    /** Loads stored volume levels from local storage, if present. */
+    /** Restores music and effects volume levels from localStorage if available. */
     loadVolumeState() {
         const storedMusic = localStorage.getItem("musicVolume");
         const storedEffects = localStorage.getItem("effectsVolume");

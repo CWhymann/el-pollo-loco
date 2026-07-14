@@ -20,7 +20,7 @@ export class MovableObject {
     energy = 100;
     lastHit = 0;
     markedForDeletion = false;
-    /** @type {number|null} Speichert die ID des Gravitations-Intervalls */
+    /** @type {number|null} ID of the active gravity interval. */
     gravityIntervalId = null;
     // #endregion
 
@@ -35,7 +35,7 @@ export class MovableObject {
     }
 
     /**
-     * Loads an array of images into the image cache.
+     * Preloads an array of images into the image cache.
      * @param {string[]} paths - Array of image paths to preload.
      */
     loadImages(paths) {
@@ -49,8 +49,8 @@ export class MovableObject {
 
     // #region Animation
     /**
-     * Plays the next frame of an animation.
-     * @param {string[]} images - Array of image paths for the animation.
+     * Advances to the next frame of an animation sequence.
+     * @param {string[]} images - Ordered array of image paths for the animation.
      */
     playAnimation(images) {
         const index = this.currentImage % images.length;
@@ -61,7 +61,7 @@ export class MovableObject {
 
     // #region Drawing
     /**
-     * Draws the object onto the canvas.
+     * Draws the object at its current position on the canvas.
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     draw(ctx) {
@@ -69,7 +69,7 @@ export class MovableObject {
     }
 
     /**
-     * Draws the object flipped horizontally onto the canvas.
+     * Draws the object mirrored horizontally (for left-facing sprites).
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
      */
     drawFlipped(ctx) {
@@ -82,30 +82,30 @@ export class MovableObject {
     // #endregion
 
     // #region Collision & Health
-    /** @returns {number} Die tatsächliche (sichtbare) x-Position, inkl. Offset. */
+    /** @returns {number} Visible x position after applying left offset. */
     get rX() {
         return this.x + this.offset.left;
     }
 
-    /** @returns {number} Die tatsächliche (sichtbare) y-Position, inkl. Offset. */
+    /** @returns {number} Visible y position after applying top offset. */
     get rY() {
         return this.y + this.offset.top;
     }
 
-    /** @returns {number} Die tatsächliche (sichtbare) Breite, inkl. Offset. */
+    /** @returns {number} Visible width after subtracting left and right offsets. */
     get rW() {
         return this.width - this.offset.left - this.offset.right;
     }
 
-    /** @returns {number} Die tatsächliche (sichtbare) Höhe, inkl. Offset. */
+    /** @returns {number} Visible height after subtracting top and bottom offsets. */
     get rH() {
         return this.height - this.offset.top - this.offset.bottom;
     }
 
     /**
-     * Checks if this object is colliding with another object.
-     * @param {MovableObject} mo - The object to check collision with.
-     * @returns {boolean} True if the objects are colliding.
+     * Returns true if this object's visible hitbox overlaps with another object's.
+     * @param {MovableObject} mo - The object to test against.
+     * @returns {boolean}
      */
     isColliding(mo) {
         return (
@@ -116,29 +116,24 @@ export class MovableObject {
         );
     }
 
-    /**
-     * Reduces energy when the object is hit.
-     */
+    /** Reduces energy by 5 on hit and records the timestamp. */
     hit() {
         this.energy -= 5;
-        if (this.energy < 0) {
-            this.energy = 0;
-        }
+        if (this.energy < 0) this.energy = 0;
         this.lastHit = new Date().getTime();
     }
 
     /**
-     * Checks if the object was recently hit.
-     * @returns {boolean} True if the object was hit in the last second.
+     * Returns true if the object was hit within the last second.
+     * @returns {boolean}
      */
     isHurt() {
-        const timePassed = new Date().getTime() - this.lastHit;
-        return timePassed < 1000;
+        return new Date().getTime() - this.lastHit < 1000;
     }
 
     /**
-     * Checks if the object is dead.
-     * @returns {boolean} True if energy is 0.
+     * Returns true if the object's energy has reached zero.
+     * @returns {boolean}
      */
     isDead() {
         return this.energy === 0;
@@ -147,9 +142,8 @@ export class MovableObject {
 
     // #region Physics
     /**
-     * Applies gravity to the object on every frame using IntervalHub.
-     * Stores the interval ID for later cleanup.
-     * @param {string} category - 'level' (default) or 'persistent'.
+     * Starts a gravity loop via IntervalHub that pulls the object downward each frame.
+     * @param {string} category - Interval category: 'level' (default) or 'persistent'.
      */
     applyGravity(category = "level") {
         this.gravityIntervalId = IntervalHub.startInterval(
@@ -164,10 +158,7 @@ export class MovableObject {
         );
     }
 
-    /**
-     * Stops the gravity interval for this specific object.
-     * Should be called when the object is removed or the game resets.
-     */
+    /** Stops the gravity interval and clears its stored ID. */
     stopGravity() {
         if (this.gravityIntervalId) {
             IntervalHub.stopInterval(this.gravityIntervalId);
@@ -176,8 +167,8 @@ export class MovableObject {
     }
 
     /**
-     * Checks if the object is above the ground level.
-     * @returns {boolean} True if the object is above ground.
+     * Returns true if the object is above the default ground level (y < 155).
+     * @returns {boolean}
      */
     isAboveGround() {
         return this.y < 155;

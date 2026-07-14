@@ -5,11 +5,14 @@
  */
 // #region class IntervalHub
 export class IntervalHub {
+    // #region Properties
     /** @type {{id: number, category: string}[]} */
     static allIntervals = [];
+    // #endregion
 
+    // #region Interval Management
     /**
-     * Starts a new interval and registers it under a category.
+     * Starts a new interval, registers it under a category and returns its ID.
      * @param {Function} func - The function to execute repeatedly.
      * @param {number} timer - The interval duration in milliseconds.
      * @param {string} category - 'level' (default) or 'persistent'.
@@ -33,9 +36,9 @@ export class IntervalHub {
     }
 
     /**
-     * Stops all intervals of a given category.
-     * Defaults to 'level', so persistent objects are unaffected.
-     * @param {string} category - 'level', 'persistent', or 'all'.
+     * Stops all intervals matching the given category.
+     * Defaults to 'level' so persistent objects are never affected.
+     * @param {string} category - 'level' (default), 'persistent', or 'all'.
      */
     static stopAllIntervals(category = "level") {
         IntervalHub.allIntervals = IntervalHub.allIntervals.filter((entry) => {
@@ -45,5 +48,6 @@ export class IntervalHub {
             return !shouldStop;
         });
     }
+    // #endregion
 }
 // #endregion class IntervalHub

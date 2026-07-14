@@ -1,13 +1,16 @@
 import { MovableObject } from "./movable-object.class.js";
 import { IntervalHub } from "./interval-hub.class.js";
 
+// #region Image Constants
 const IMAGES_CLOUD = [
     "assets/img/5_background/layers/4_clouds/1.png",
     "assets/img/5_background/layers/4_clouds/2.png",
 ];
+// #endregion
 
 /**
- * Represents a moving background cloud.
+ * Represents a slowly drifting background cloud.
+ * Picks one of two cloud images at random on creation.
  */
 // #region class Cloud
 export class Cloud extends MovableObject {
@@ -20,7 +23,7 @@ export class Cloud extends MovableObject {
 
     // #region Constructor
     /**
-     * @param {number} x - The x position.
+     * @param {number} x - The starting x position of the cloud.
      */
     constructor(x) {
         super();
@@ -32,7 +35,7 @@ export class Cloud extends MovableObject {
     // #endregion
 
     // #region Logic
-    /** Starts cloud movement via IntervalHub. */
+    /** Starts the leftward drift loop via IntervalHub. */
     animate() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.moveLeft(),
@@ -40,12 +43,12 @@ export class Cloud extends MovableObject {
         );
     }
 
-    /** Moves the cloud to the left. */
+    /** Moves the cloud one step to the left each frame. */
     moveLeft() {
         this.x -= this.speed;
     }
 
-    /** Stops the movement interval. */
+    /** Stops the drift interval. */
     stop() {
         if (this.moveIntervalId) IntervalHub.stopInterval(this.moveIntervalId);
     }

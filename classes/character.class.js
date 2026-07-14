@@ -66,6 +66,7 @@ const IMAGES_DEAD = [
     "assets/img/2_character_pepe/5_dead/D-57.png",
 ];
 // #endregion
+
 /**
  * Represents the player character Pepe.
  * Extends MovableObject with keyboard-controlled movement,
@@ -111,8 +112,7 @@ export class Character extends MovableObject {
 
     // #region Animation & Movement
     /**
-     * Starts the animation and movement intervals.
-     * Marked as 'persistent' so they survive a level reset.
+     * Starts movement and animation intervals as persistent (survive resets).
      */
     animate() {
         IntervalHub.startInterval(
@@ -128,11 +128,20 @@ export class Character extends MovableObject {
     }
 
     /**
-     * Handles character movement based on keyboard input.
-     * Clamps movement to the level boundaries (minX/maxX).
+     * Processes keyboard input and clamps position to level boundaries.
      */
     handleMovement() {
         if (this.isDead()) return;
+        this.applyHorizontalMovement();
+        this.clampPosition();
+        this.handleRunSound();
+        if (this.keyboard.SPACE && !this.isAboveGround()) this.jump();
+        if (this.keyboard.D && this.bottles > 0 && this.canThrow())
+            this.throwBottle();
+    }
+
+    /** Moves the character left or right and updates facing direction. */
+    applyHorizontalMovement() {
         if (this.keyboard.RIGHT) {
             this.x += this.speed;
             this.otherDirection = false;
@@ -143,54 +152,51 @@ export class Character extends MovableObject {
             this.otherDirection = true;
             this.lastMove = new Date().getTime();
         }
+    }
+
+    /** Prevents the character from leaving the defined level boundaries. */
+    clampPosition() {
         if (this.x < this.minX) this.x = this.minX;
         if (this.x > this.maxX) this.x = this.maxX;
+    }
 
-        this.handleRunSound();
-        if (this.keyboard.SPACE && !this.isAboveGround()) this.jump();
-        if (this.keyboard.D && this.bottles > 0 && this.canThrow())
-            this.throwBottle();
+    /** Selects and plays the correct animation for the current state. */
+    handleAnimation() {
+        if (this.isDead()) return this.playAnimation(IMAGES_DEAD);
+        if (this.isHurt()) return this.playAnimation(IMAGES_HURT);
+        if (this.isAboveGround()) return this.playAnimation(IMAGES_JUMPING);
+        if (this.keyboard.RIGHT || this.keyboard.LEFT)
+            return this.playAnimation(IMAGES_WALKING);
+        if (this.isLongIdle()) {
+            this.playAnimation(IMAGES_LONG_IDLE);
+            this.handleSnoringSound();
+            return;
+        }
+        this.playAnimation(IMAGES_IDLE);
+    }
+
+    /**
+     * Returns true if the character has been idle for more than 8 seconds.
+     * @returns {boolean}
+     */
+    isLongIdle() {
+        return new Date().getTime() - this.lastMove > 8000;
     }
     // #endregion
 
     // #region Sound Helpers
-    /** Plays or stops the running sound based on movement state. */
+    /** Starts or stops the running sound depending on current movement state. */
     handleRunSound() {
         if (!this.world) return;
         const isMoving =
             (this.keyboard.RIGHT || this.keyboard.LEFT) &&
             !this.isAboveGround();
         if (isMoving && !this.world.audioManager.sounds.run.paused) return;
-        if (isMoving) {
-            this.world.audioManager.play("run");
-        } else {
-            this.world.audioManager.stop("run");
-        }
+        if (isMoving) this.world.audioManager.play("run");
+        else this.world.audioManager.stop("run");
     }
 
-    /**
-     * Handles animation based on current movement state.
-     */
-    handleAnimation() {
-        if (this.isDead()) {
-            this.playAnimation(IMAGES_DEAD);
-        } else if (this.isHurt()) {
-            this.playAnimation(IMAGES_HURT);
-        } else if (this.isAboveGround()) {
-            this.playAnimation(IMAGES_JUMPING);
-        } else if (this.keyboard.RIGHT || this.keyboard.LEFT) {
-            this.playAnimation(IMAGES_WALKING);
-        } else if (new Date().getTime() - this.lastMove > 8000) {
-            this.playAnimation(IMAGES_LONG_IDLE);
-            this.handleSnoringSound();
-        } else {
-            this.playAnimation(IMAGES_IDLE);
-        }
-    }
-    // #endregion
-
-    // #region Sound Helpers
-    /** Plays the snoring sound once while the character is in long-idle. */
+    /** Plays the snoring sound once when the character enters long-idle. */
     handleSnoringSound() {
         if (!this.world || !this.isGameActive()) return;
         if (this.world.audioManager.sounds.snoring.paused) {
@@ -198,7 +204,10 @@ export class Character extends MovableObject {
         }
     }
 
-    /** @returns {boolean} True if the game is currently being played. */
+    /**
+     * Returns true only while the game is actively being played.
+     * @returns {boolean}
+     */
     isGameActive() {
         return (
             this.world.gameStarted &&
@@ -207,19 +216,15 @@ export class Character extends MovableObject {
         );
     }
     // #endregion
-    
+
     // #region Actions
-    /**
-     * Makes the character jump by setting vertical speed.
-     */
+    /** Makes the character jump and plays the jump sound. */
     jump() {
         this.speedY = 30;
         if (this.world) this.world.audioManager.play("jump");
     }
 
-    /**
-     * Throws a bottle in the current direction.
-     */
+    /** Creates and launches a throwable bottle in the current facing direction. */
     throwBottle() {
         this.lastThrow = new Date().getTime();
         this.bottles--;
@@ -236,12 +241,11 @@ export class Character extends MovableObject {
     }
 
     /**
-     * Checks if enough time has passed to throw another bottle.
-     * @returns {boolean} True if the character can throw.
+     * Returns true if enough time has passed since the last throw.
+     * @returns {boolean}
      */
     canThrow() {
-        const timePassed = new Date().getTime() - this.lastThrow;
-        return timePassed > 500;
+        return new Date().getTime() - this.lastThrow > 500;
     }
     // #endregion
 }

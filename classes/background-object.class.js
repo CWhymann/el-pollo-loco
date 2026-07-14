@@ -1,7 +1,8 @@
 import { MovableObject } from "./movable-object.class.js";
 
 /**
- * Represents a static background object.
+ * Represents a static background layer tile.
+ * Can be flipped horizontally to reuse the same image for mirrored sections.
  */
 // #region class BackgroundObject
 export class BackgroundObject extends MovableObject {
@@ -12,9 +13,9 @@ export class BackgroundObject extends MovableObject {
 
     // #region Constructor
     /**
-     * @param {string} imagePath - Path to the image.
-     * @param {number} x - The x position.
-     * @param {boolean} otherDirection - Flip image horizontally.
+     * @param {string} imagePath - Path to the background layer image.
+     * @param {number} x - The x position of this tile in the level.
+     * @param {boolean} otherDirection - True to flip the image horizontally.
      */
     constructor(imagePath, x, otherDirection = false) {
         super();
