@@ -1,23 +1,120 @@
-/* #region Mobile Controls */
-@media (max-width: 768px) and (orientation: landscape) {
-    #mobile-controls {
-        display: flex;
-    }
-}
-@media (max-width: 768px) and (orientation: portrait) {
+/* #region Portrait Rotate Hint */
+@media (max-width: 900px) and (orientation: portrait) {
     #rotate-screen {
         display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        z-index: 100000;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .game-header,
+    #game-container {
+        display: none;
     }
 }
 /* #endregion */
 
-/* #region Responsive Typography */
-@media (max-width: 600px) {
-    #game-title {
-        font-size: 32px;
+/* #region Landscape Mobile Layout */
+@media (max-width: 900px) and (orientation: landscape) {
+    body {
+        padding: 0;
+        overflow: hidden;
     }
-    .blood-icon {
-        width: 6px;
+
+    #game-wrapper {
+        padding: 0;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .game-header {
+        display: none;
+    }
+
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    #game-container canvas {
+        width: 100vw;
+        height: 100vh;
+        object-fit: fill;
+    }
+
+    #mobile-controls {
+        display: flex;
+        position: absolute;
+        bottom: 10px;
+        width: 100%;
+        padding: 0;
+        z-index: 200;
+    }
+
+    .controls-left {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding-left: 12px;
+    }
+
+    .controls-right {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding-right: 12px;
+    }
+
+    #mobile-controls button {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 35%;
+        background-color: rgba(255, 255, 255, 0.25);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: none;
+        cursor: pointer;
+    }
+
+    #ui-buttons {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        bottom: auto;
+    }
+
+    #mute-button,
+    #settings-button,
+    #fullscreen-button {
+        padding: 6px 8px;
+        font-size: 16px;
+    }
+
+    #game-ui {
+        top: 4px;
+        right: 4px;
+        gap: 4px;
     }
 }
-/* #endregion */

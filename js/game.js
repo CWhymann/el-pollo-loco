@@ -65,10 +65,14 @@ function initTouchControls() {
  */
 function registerTouchButton(id, key) {
     const btn = document.getElementById(id);
-    btn.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        keyboard[key] = true;
-    });
+    btn.addEventListener(
+        "touchstart",
+        (e) => {
+            e.preventDefault();
+            keyboard[key] = true;
+        },
+        { passive: false },
+    );
     btn.addEventListener("touchend", () => {
         keyboard[key] = false;
     });
@@ -89,6 +93,71 @@ function initImprintLink() {
 }
 // #endregion
 
+// #region Loading Screen
+/**
+ * Initialises the loading screen progression and handles transitioning to the game.
+ */
+function initLoadingScreen() {
+    const screen = document.getElementById("loading-screen");
+    const wrapper = document.getElementById("game-wrapper");
+    if (screen && wrapper) startProgressInterval(screen, wrapper);
+}
+
+/**
+ * Starts the progression simulation interval.
+ * @param {HTMLElement} screen 
+ * @param {HTMLElement} wrapper 
+ */
+function startProgressInterval(screen, wrapper) {
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 15) + 5;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            finishLoading(screen, wrapper);
+        }
+        updateLoadingProgress(progress);
+    }, 100);
+}
+
+/**
+ * Updates the loading bar and text percentage.
+ * @param {number} progress 
+ */
+function updateLoadingProgress(progress) {
+    const loadingBar = document.getElementById("loading-bar");
+    const loadingPercent = document.getElementById("loading-percent");
+    if (loadingBar) loadingBar.style.width = `${progress}%`;
+    if (loadingPercent) loadingPercent.textContent = `${progress}%`;
+}
+
+/**
+ * Initiates the transition to fade out loading screen and show game wrapper.
+ * @param {HTMLElement} screen 
+ * @param {HTMLElement} wrapper 
+ */
+function finishLoading(screen, wrapper) {
+    setTimeout(() => {
+        screen.style.transition = "opacity 0.5s ease-out";
+        screen.style.opacity = "0";
+        wrapper.style.display = "flex";
+        hideLoadingScreen(screen);
+    }, 300);
+}
+
+/**
+ * Fully hides the loading screen after the fade animation.
+ * @param {HTMLElement} screen 
+ */
+function hideLoadingScreen(screen) {
+    setTimeout(() => {
+        screen.style.display = "none";
+    }, 500);
+}
+// #endregion
+
+initLoadingScreen();
 initFullscreen();
 initKeyboard();
 initTouchControls();

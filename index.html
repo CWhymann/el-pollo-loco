@@ -2,7 +2,10 @@
 <html lang="de">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
         <title>El Pollo Loco</title>
         <link rel="icon" href="./assets/icons/Huhn.svg" />
         <link rel="stylesheet" href="css/reset.css" />
@@ -12,131 +15,169 @@
         <script type="module" src="js/game.js" defer></script>
     </head>
     <body>
-        <header class="game-header">
-            <div class="salsa-container">
+        <!-- ===== LOADING SCREEN ===== -->
+        <div id="loading-screen">
+            <div class="loading-inner">
+                <div class="loading-bottle-wrap">
+                    <img
+                        src="./assets/img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png"
+                        class="loading-bottle"
+                        id="loading-bottle"
+                        alt="Ladende Salsa Flasche"
+                    />
+                    <div class="loading-splash-ring"></div>
+                </div>
+                <h2 class="loading-title">El Pollo Loco</h2>
+                <p class="loading-sub">Cargando...</p>
+                <div class="loading-bar-wrap">
+                    <div class="loading-bar" id="loading-bar"></div>
+                </div>
+                <p class="loading-percent" id="loading-percent">0%</p>
+            </div>
+        </div>
+
+        <!-- ===== MAIN GAME ===== -->
+        <div id="game-wrapper" style="display: none">
+            <header class="game-header">
+                <div class="salsa-container">
+                    <img
+                        src="./assets/img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png"
+                        class="salza-bottle-icon"
+                        alt="Salsa Flasche"
+                    />
+                    <img
+                        src="assets/icons/blood-drop.png"
+                        class="blood-icon bottle-drop"
+                        alt=""
+                    />
+                </div>
+                <h1 id="game-title">
+                    E<span class="drip"
+                        >l<img
+                            src="assets/icons/blood-drop.png"
+                            class="blood-icon"
+                            alt=""
+                    /></span>
+                    Po<span class="drip"
+                        >l<img
+                            src="assets/icons/blood-drop.png"
+                            class="blood-icon"
+                            alt="" /></span
+                    ><span class="drip"
+                        >l<img
+                            src="assets/icons/blood-drop.png"
+                            class="blood-icon"
+                            alt="" /></span
+                    >o
+                    <span class="drip"
+                        >L<img
+                            src="assets/icons/blood-drop.png"
+                            class="blood-icon"
+                            alt="" /></span
+                    >oco
+                </h1>
+            </header>
+
+            <div id="game-container">
+                <canvas id="canvas"></canvas>
                 <img
-                    src="./assets/img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png"
-                    class="salza-bottle-icon"
-                    alt="Salsa Flasche"
-                />
-                <img
-                    src="assets/icons/blood-drop.png"
-                    class="blood-icon bottle-drop"
+                    src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png"
+                    class="canvas-splash splash-1"
                     alt=""
                 />
-            </div>
-            <h1 id="game-title">
-                E<span class="drip"
-                    >l<img
-                        src="assets/icons/blood-drop.png"
-                        class="blood-icon"
-                        alt=""
-                /></span>
-                Po<span class="drip"
-                    >l<img
-                        src="assets/icons/blood-drop.png"
-                        class="blood-icon"
-                        alt="" /></span
-                ><span class="drip"
-                    >l<img
-                        src="assets/icons/blood-drop.png"
-                        class="blood-icon"
-                        alt="" /></span
-                >o
-                <span class="drip"
-                    >L<img
-                        src="assets/icons/blood-drop.png"
-                        class="blood-icon"
-                        alt="" /></span
-                >oco
-            </h1>
-        </header>
+                <img
+                    src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png"
+                    class="canvas-splash splash-2"
+                    alt=""
+                />
+                <img
+                    src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/4_bottle_splash.png"
+                    class="canvas-splash splash-3"
+                    alt=""
+                />
 
-        <div id="game-container">
-            <canvas id="canvas"></canvas>
-            <img
-                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/3_bottle_splash.png"
-                class="canvas-splash splash-1"
-                alt=""
-            />
-            <img
-                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png"
-                class="canvas-splash splash-2"
-                alt=""
-            />
-            <img
-                src="assets/img/6_salsa_bottle/bottle_rotation/bottle_splash/4_bottle_splash.png"
-                class="canvas-splash splash-3"
-                alt=""
-            />
+                <div id="start-screen">
+                    <button
+                        id="start-button"
+                        class="splash-button"
+                        aria-label="Spiel starten"
+                    >
+                        Play
+                    </button>
+                    <button
+                        id="controls-button"
+                        class="splash-button"
+                        aria-label="Steuerung anzeigen"
+                    >
+                        <span class="btn-text">Controls</span>
+                    </button>
+                    <button
+                        id="imprint-button"
+                        class="splash-button"
+                        aria-label="Impressum anzeigen"
+                    >
+                        <span class="btn-text">Impressum</span>
+                    </button>
+                </div>
 
-            <div id="start-screen">
-                <button
-                    id="start-button"
-                    class="splash-button"
-                    aria-label="Spiel starten"
+                <div
+                    id="game-ui"
+                    style="
+                        display: none;
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        gap: 10px;
+                        z-index: 100;
+                    "
                 >
-                    Play
-                </button>
-                <button
-                    id="controls-button"
-                    class="splash-button"
-                    aria-label="Steuerung anzeigen"
-                >
-                    <span class="btn-text">Controls</span>
-                </button>
-                <button
-                    id="imprint-button"
-                    class="splash-button"
-                    aria-label="Impressum anzeigen"
-                >
-                    <span class="btn-text">Impressum</span>
-                </button>
-            </div>
+                    <button
+                        id="restart-button"
+                        class="splash-button"
+                        aria-label="Neustart"
+                    >
+                        🔄 Restart
+                    </button>
+                    <button
+                        id="back-to-start-button"
+                        class="splash-button"
+                        aria-label="Zurück zum Start"
+                    >
+                        🏠 Back to Start
+                    </button>
+                </div>
 
-            <div
-                id="game-ui"
-                style="
-                    display: none;
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    gap: 10px;
-                    z-index: 100;
-                "
-            >
-                <button
-                    id="restart-button"
-                    class="splash-button"
-                    aria-label="Neustart"
-                >
-                    🔄 Restart
-                </button>
-                <button
-                    id="back-to-start-button"
-                    class="splash-button"
-                    aria-label="Zurück zum Start"
-                >
-                    🏠 Back to Start
-                </button>
-            </div>
+                <div id="ui-buttons">
+                    <button id="mute-button" aria-label="Sound ein/aus">
+                        🔊
+                    </button>
+                    <button
+                        id="settings-button"
+                        aria-label="Lautstärke-Einstellungen"
+                    >
+                        ⚙️
+                    </button>
+                    <button id="fullscreen-button" aria-label="Vollbild">
+                        ⛶
+                    </button>
+                </div>
 
-            <div id="ui-buttons">
-                <button id="mute-button" aria-label="Sound ein/aus">🔊</button>
-                <button id="settings-button" aria-label="Lautstärke-Einstellungen">⚙️</button>
-                <button id="fullscreen-button" aria-label="Vollbild">⛶</button>
-            </div>
+                <div id="mobile-controls">
+                    <div class="controls-left">
+                        <button id="btn-left" aria-label="Links">◀</button>
+                        <button id="btn-jump" aria-label="Springen">▲</button>
+                    </div>
+                    <div class="controls-right">
+                        <button id="btn-right" aria-label="Rechts">▶</button>
+                        <button id="btn-throw" aria-label="Werfen">🍶</button>
+                    </div>
+                </div>
 
-            <div id="mobile-controls">
-                <button id="btn-left" aria-label="Links">◀</button>
-                <button id="btn-jump" aria-label="Springen">▲</button>
-                <button id="btn-right" aria-label="Rechts">▶</button>
-                <button id="btn-throw" aria-label="Werfen">🍶</button>
+                
             </div>
-
-            <div id="rotate-screen">
-                <p>🔄 Please rotate your device to play!</p>
-            </div>
+        </div>
+        <div id="rotate-screen">
+            <p>🔄 Please rotate your device to play!</p>
         </div>
     </body>
 </html>

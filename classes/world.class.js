@@ -135,7 +135,7 @@ export class World {
         });
     }
 
-    /** Registers all canvas mouse event listeners. */
+    /** Registers all canvas mouse and touch event listeners. */
     initCanvasListeners() {
         this.canvas.addEventListener("click", (e) => this.handleCanvasClick(e));
         this.canvas.addEventListener("mousedown", (e) =>
@@ -145,6 +145,19 @@ export class World {
             this.handleCanvasMouseMove(e),
         );
         window.addEventListener("mouseup", () => this.handleCanvasMouseUp());
+        this.canvas.addEventListener(
+            "touchstart",
+            (e) => this.handleCanvasTouchStart(e),
+            { passive: false },
+        );
+        this.canvas.addEventListener(
+            "touchmove",
+            (e) => this.handleCanvasTouchMove(e),
+            { passive: false },
+        );
+        this.canvas.addEventListener("touchend", (e) =>
+            this.handleCanvasTouchEnd(e),
+        );
     }
     // #endregion
 
@@ -309,6 +322,7 @@ export class World {
     /** Resets the full game state and restarts immediately without reloading. */
     resetGame() {
         IntervalHub.stopAllIntervals();
+        this.audioManager.stopAll(["background"]);
         this.gameOver = false;
         this.gameWon = false;
         this.gameStarted = true;
@@ -532,6 +546,82 @@ export class World {
     /** Stops dragging the active slider knob on mouse release. */
     handleCanvasMouseUp() {
         this.draggingSlider = null;
+    }
+
+    
+
+    /**
+     * Converts touch coordinates to internal canvas coordinates.
+     * @param {TouchEvent} e - The touch event.
+     * @returns {{x: number, y: number}} The point in canvas space.
+     */
+    getTouchCoords(e) {
+        const touch = e.touches[0] || e.changedTouches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        return {
+            x: (touch.clientX - rect.left) * scaleX,
+            y: (touch.clientY - rect.top) * scaleY,
+        };
+    }
+
+    /**
+     * Starts dragging a volume slider knob if the touch landed on one.
+     * @param {TouchEvent} e - The touch event.
+     */
+    handleCanvasTouchStart(e) {
+        if (!this.settingsDialogVisible) return;
+        const { x, y } = this.getTouchCoords(e);
+        if (this.settingsDialog.isMusicSliderHit(x, y))
+            this.draggingSlider = "music";
+        else if (this.settingsDialog.isEffectsSliderHit(x, y))
+            this.draggingSlider = "effects";
+    }
+
+    /**
+     * Updates the dragged slider value via touch and applies it to AudioManager.
+     * @param {TouchEvent} e - The touch event.
+     */
+    handleCanvasTouchMove(e) {
+        if (!this.draggingSlider) return;
+        e.preventDefault();
+        const { x } = this.getTouchCoords(e);
+        const value = this.settingsDialog.getValueFromX(x);
+        if (this.draggingSlider === "music") {
+            this.settingsDialog.musicVolume = value;
+            this.audioManager.setMusicVolume(value);
+        } else if (this.draggingSlider === "effects") {
+            this.settingsDialog.effectsVolume = value;
+            this.audioManager.setEffectsVolume(value);
+        }
+    }
+
+    /**
+     * Stops dragging or handles dialog closing on touch release.
+     * @param {TouchEvent} e - The touch event.
+     */
+    handleCanvasTouchEnd(e) {
+        if (this.draggingSlider) {
+            this.draggingSlider = null;
+            return;
+        }
+        if (!this.controlsDialogVisible && !this.settingsDialogVisible) return;
+        const { x: px, y: py } = this.getTouchCoords(e);
+        if (this.controlsDialogVisible)
+            this.tryCloseDialog(
+                this.controlsDialog,
+                px,
+                py,
+                "controlsDialogVisible",
+            );
+        if (this.settingsDialogVisible)
+            this.tryCloseDialog(
+                this.settingsDialog,
+                px,
+                py,
+                "settingsDialogVisible",
+            );
     }
 
     /**
