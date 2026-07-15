@@ -67,12 +67,12 @@ const IMAGES_DEAD = [
 ];
 // #endregion
 
+// #region class Character
 /**
  * Represents the player character Pepe.
  * Extends MovableObject with keyboard-controlled movement,
  * animations and bottle throwing.
  */
-// #region class Character
 export class Character extends MovableObject {
     // #region Properties
     x = 0;

@@ -13,12 +13,12 @@ const IMAGES_DEAD = [
 ];
 // #endregion
 
+// #region class ChickenSmall
 /**
  * Represents a small chicken enemy.
  * Can be stunned by jumping on it or killed by a bottle throw.
  * Silently dissolves when it walks off the left edge.
  */
-// #region class ChickenSmall
 export class ChickenSmall extends MovableObject {
     // #region Properties
     x = 700;

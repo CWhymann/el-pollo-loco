@@ -13,11 +13,11 @@ const IMAGES_DEAD = [
 ];
 // #endregion
 
+// #region class Chicken
 /**
  * Represents a normal chicken enemy.
  * Walks left and dies on any hit. Silently dissolves off the left edge.
  */
-// #region class Chicken
 export class Chicken extends MovableObject {
     // #region Properties
     x = 700;
