@@ -142,16 +142,16 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-# ===== OS =====
+# OS 
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ===== VS Code =====
+# VS Code 
 .vscode/
 *.code-workspace
 
-# ===== JSDoc Output =====
+# JSDoc Output 
 docs/
 out/
 jsdoc/
