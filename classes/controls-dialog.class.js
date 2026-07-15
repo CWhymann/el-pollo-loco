@@ -63,6 +63,14 @@ export class ControlsDialog extends MovableObject {
         ctx.font = "28px Boogaloo";
         ctx.fillStyle = "#e80f2c";
         ctx.fillText("Steuerung", this.boxX + 24, this.boxY + 48);
+        this.drawKeyboardLines(ctx);
+    }
+
+    /**
+     * Draws the individual keyboard control lines.
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     */
+    drawKeyboardLines(ctx) {
         ctx.font = "16px Arial";
         ctx.fillStyle = "#fff5e0";
         const lines = [
@@ -95,13 +103,23 @@ export class ControlsDialog extends MovableObject {
         ctx.save();
         ctx.strokeStyle = "#fff5e0";
         ctx.lineWidth = 3;
+        this.drawCloseLine(ctx, cx, cy);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    /**
+     * Draws the two crossing lines of the close icon.
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} cx - Centre x of the icon.
+     * @param {number} cy - Centre y of the icon.
+     */
+    drawCloseLine(ctx, cx, cy) {
         ctx.beginPath();
         ctx.moveTo(cx - this.closeSize, cy - this.closeSize);
         ctx.lineTo(cx + this.closeSize, cy + this.closeSize);
         ctx.moveTo(cx + this.closeSize, cy - this.closeSize);
         ctx.lineTo(cx - this.closeSize, cy + this.closeSize);
-        ctx.stroke();
-        ctx.restore();
     }
     // #endregion
 

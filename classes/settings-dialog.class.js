@@ -33,6 +33,12 @@ export class SettingsDialog extends MovableObject {
         this.drawOverlay(ctx);
         this.drawBox(ctx);
         this.drawTitle(ctx);
+        this.drawSliders(ctx);
+        this.drawCloseIcon(ctx);
+    }
+
+    /** Draws both volume sliders onto the dialog. */
+    drawSliders(ctx) {
         this.drawSlider(ctx, this.getMusicSliderY(), this.musicVolume, "Musik");
         this.drawSlider(
             ctx,
@@ -40,7 +46,6 @@ export class SettingsDialog extends MovableObject {
             this.effectsVolume,
             "Effekte",
         );
-        this.drawCloseIcon(ctx);
     }
 
     /** Draws a semi-transparent dark overlay over the whole canvas. */
@@ -120,13 +125,23 @@ export class SettingsDialog extends MovableObject {
         ctx.save();
         ctx.strokeStyle = "#fff5e0";
         ctx.lineWidth = 3;
+        this.drawCloseLine(ctx, cx, cy);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    /**
+     * Draws the two crossing lines of the close icon.
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} cx - Centre x of the icon.
+     * @param {number} cy - Centre y of the icon.
+     */
+    drawCloseLine(ctx, cx, cy) {
         ctx.beginPath();
         ctx.moveTo(cx - this.closeSize, cy - this.closeSize);
         ctx.lineTo(cx + this.closeSize, cy + this.closeSize);
         ctx.moveTo(cx + this.closeSize, cy - this.closeSize);
         ctx.lineTo(cx - this.closeSize, cy + this.closeSize);
-        ctx.stroke();
-        ctx.restore();
     }
     // #endregion
 

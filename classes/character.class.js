@@ -98,6 +98,13 @@ export class Character extends MovableObject {
     constructor(keyboard) {
         super();
         this.keyboard = keyboard;
+        this.loadCharacterImages();
+        this.animate();
+        this.applyGravity("persistent");
+    }
+
+    /** Loads all animation image sets for the character. */
+    loadCharacterImages() {
         this.loadImage(IMAGES_IDLE[0]);
         this.loadImages(IMAGES_IDLE);
         this.loadImages(IMAGES_WALKING);
@@ -105,21 +112,27 @@ export class Character extends MovableObject {
         this.loadImages(IMAGES_HURT);
         this.loadImages(IMAGES_DEAD);
         this.loadImages(IMAGES_LONG_IDLE);
-        this.animate();
-        this.applyGravity("persistent");
     }
     // #endregion
 
     // #region Animation & Movement
-    /**
-     * Starts movement and animation intervals as persistent (survive resets).
-     */
+    /** Starts movement and animation intervals as persistent (survive resets). */
     animate() {
+        this.startMovementInterval();
+        this.startAnimationInterval();
+    }
+
+    /** Registers the 60 fps movement update interval. */
+    startMovementInterval() {
         IntervalHub.startInterval(
             () => this.handleMovement(),
             1000 / 60,
             "persistent",
         );
+    }
+
+    /** Registers the 15 fps animation frame interval. */
+    startAnimationInterval() {
         IntervalHub.startInterval(
             () => this.handleAnimation(),
             1000 / 15,
@@ -127,9 +140,7 @@ export class Character extends MovableObject {
         );
     }
 
-    /**
-     * Processes keyboard input and clamps position to level boundaries.
-     */
+    /** Processes keyboard input and clamps position to level boundaries. */
     handleMovement() {
         if (this.isDead()) return;
         this.applyHorizontalMovement();
@@ -167,6 +178,11 @@ export class Character extends MovableObject {
         if (this.isAboveGround()) return this.playAnimation(IMAGES_JUMPING);
         if (this.keyboard.RIGHT || this.keyboard.LEFT)
             return this.playAnimation(IMAGES_WALKING);
+        this.playIdleAnimation();
+    }
+
+    /** Plays long-idle or standard idle animation depending on inactivity time. */
+    playIdleAnimation() {
         if (this.isLongIdle()) {
             this.playAnimation(IMAGES_LONG_IDLE);
             this.handleSnoringSound();
@@ -199,9 +215,8 @@ export class Character extends MovableObject {
     /** Plays the snoring sound once when the character enters long-idle. */
     handleSnoringSound() {
         if (!this.world || !this.isGameActive()) return;
-        if (this.world.audioManager.sounds.snoring.paused) {
+        if (this.world.audioManager.sounds.snoring.paused)
             this.world.audioManager.play("snoring");
-        }
     }
 
     /**
@@ -229,6 +244,16 @@ export class Character extends MovableObject {
         this.lastThrow = new Date().getTime();
         this.bottles--;
         this.world.bottleBar.setPercentage(this.bottles * 20);
+        const bottle = this.createBottle();
+        this.world.throwableObjects.push(bottle);
+        this.world.audioManager.play("bottleShot");
+    }
+
+    /**
+     * Creates a new ThrowableObject at the character's current position.
+     * @returns {ThrowableObject}
+     */
+    createBottle() {
         const throwX = this.otherDirection ? this.x - 50 : this.x + 100;
         const bottle = new ThrowableObject(
             throwX,
@@ -236,8 +261,7 @@ export class Character extends MovableObject {
             this.otherDirection,
         );
         bottle.world = this.world;
-        this.world.throwableObjects.push(bottle);
-        this.world.audioManager.play("bottleShot");
+        return bottle;
     }
 
     /**

@@ -22,6 +22,11 @@ export class WorldCollisions {
             if (this.world.character.isColliding(enemy))
                 this.handleEnemyCollision(enemy);
         });
+        this.checkGameOver();
+    }
+
+    /** Triggers game over if the character is dead and not already flagged. */
+    checkGameOver() {
         if (this.world.character.isDead() && !this.world.gameOver) {
             this.world.gameOver = true;
             this.world.audioManager.play("gameOver");
@@ -100,36 +105,49 @@ export class WorldCollisions {
     /** Checks each coin for a collision with the character and collects it. */
     checkCoinCollisions() {
         this.world.level.coins.forEach((coin, index) => {
-            if (this.world.character.isColliding(coin)) {
-                this.world.level.coins.splice(index, 1);
-                this.world.character.coins++;
-                this.world.coinBar.setPercentage(
-                    this.calculateBarPercentage(
-                        this.world.character.coins,
-                        this.world.totalCoins,
-                    ),
-                );
-                this.world.audioManager.play("coin");
-            }
+            if (this.world.character.isColliding(coin)) this.collectCoin(index);
         });
+    }
+
+    /**
+     * Removes a coin, increments the counter and updates the coin bar.
+     * @param {number} index - Index of the coin in the level's coin array.
+     */
+    collectCoin(index) {
+        this.world.level.coins.splice(index, 1);
+        this.world.character.coins++;
+        this.world.coinBar.setPercentage(
+            this.calculateBarPercentage(
+                this.world.character.coins,
+                this.world.totalCoins,
+            ),
+        );
+        this.world.audioManager.play("coin");
     }
 
     /** Checks each ground bottle for a collision with the character and picks it up. */
     checkBottleCollisions() {
-        this.world.level.bottles = this.world.level.bottles.filter((bottle) => {
-            if (this.world.character.isColliding(bottle)) {
-                this.world.character.bottles++;
-                this.world.bottleBar.setPercentage(
-                    this.calculateBarPercentage(
-                        this.world.character.bottles,
-                        this.world.totalBottles,
-                    ),
-                );
-                this.world.audioManager.play("bottlePickup");
-                return false;
-            }
-            return true;
-        });
+        this.world.level.bottles = this.world.level.bottles.filter(
+            (bottle) => !this.collectBottle(bottle),
+        );
+    }
+
+    /**
+     * Picks up a bottle if the character is colliding with it.
+     * @param {Bottle} bottle - The bottle to check.
+     * @returns {boolean} True if the bottle was collected and should be removed.
+     */
+    collectBottle(bottle) {
+        if (!this.world.character.isColliding(bottle)) return false;
+        this.world.character.bottles++;
+        this.world.bottleBar.setPercentage(
+            this.calculateBarPercentage(
+                this.world.character.bottles,
+                this.world.totalBottles,
+            ),
+        );
+        this.world.audioManager.play("bottlePickup");
+        return true;
     }
 
     /**
@@ -176,10 +194,17 @@ export class WorldCollisions {
             endboss &&
             this.world.character.x > 1800 &&
             !endboss.hadFirstContact
-        ) {
-            endboss.hadFirstContact = true;
-            this.world.audioManager.play("endbossApproach");
-        }
+        )
+            this.triggerEndbossAlert(endboss);
+    }
+
+    /**
+     * Sets first contact flag and plays the endboss approach sound.
+     * @param {Endboss} endboss - The endboss instance.
+     */
+    triggerEndbossAlert(endboss) {
+        endboss.hadFirstContact = true;
+        this.world.audioManager.play("endbossApproach");
     }
 
     /** Removes all enemies that have been flagged for deletion. */

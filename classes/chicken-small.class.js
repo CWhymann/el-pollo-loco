@@ -54,10 +54,20 @@ export class ChickenSmall extends MovableObject {
     // #region Logic
     /** Registers movement and animation intervals via IntervalHub. */
     animate() {
+        this.startMoveInterval();
+        this.startAnimInterval();
+    }
+
+    /** Starts the 60 fps movement update interval. */
+    startMoveInterval() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
             1000 / 60,
         );
+    }
+
+    /** Starts the 10 fps animation frame interval. */
+    startAnimInterval() {
         this.animIntervalId = IntervalHub.startInterval(
             () => this.handleAnimation(),
             1000 / 10,
@@ -98,9 +108,7 @@ export class ChickenSmall extends MovableObject {
         else this.playAnimation(IMAGES_WALKING);
     }
 
-    /**
-     * Reduces energy by 20 on a bottle hit and triggers death if energy reaches zero.
-     */
+    /** Reduces energy by 20 on a bottle hit and triggers death if energy reaches zero. */
     hit() {
         this.energy -= 20;
         if (this.energy < 0) this.energy = 0;

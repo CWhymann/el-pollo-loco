@@ -17,22 +17,22 @@ export class WorldRendering {
     // #region Game Loop
     /** Main draw loop — clears canvas and delegates to the correct screen. */
     draw() {
-        const { ctx, canvas, gameStarted, gameOver, gameWon } = this.world;
+        this.clearCanvas();
+        const { gameStarted, gameOver, gameWon } = this.world;
+        if (!gameStarted) return this.drawStartScreen();
+        if (gameOver) return this.drawGameOverScreen();
+        if (gameWon) return this.drawWinScreen();
+        this.drawActiveGame();
+    }
+
+    /** Clears the entire canvas for the next frame. */
+    clearCanvas() {
+        const { ctx, canvas } = this.world;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-        if (!gameStarted) {
-            this.drawStartScreen();
-            return;
-        }
-        if (gameOver) {
-            this.drawGameOverScreen();
-            return;
-        }
-        if (gameWon) {
-            this.drawWinScreen();
-            return;
-        }
-
+    /** Updates camera, runs collisions and draws the game world. */
+    drawActiveGame() {
         this.world.updateCamera();
         this.runCollisionChecks();
         this.drawGameWorld();
@@ -82,9 +82,16 @@ export class WorldRendering {
     // #region World Drawing
     /** Renders the full game world: background, enemies, items, HUD. */
     drawGameWorld() {
-        const { ctx, camera_x, level, throwableObjects, character } =
-            this.world;
+        const { ctx, camera_x } = this.world;
         ctx.translate(camera_x, 0);
+        this.drawWorldObjects();
+        ctx.translate(-camera_x, 0);
+        this.drawHud();
+    }
+
+    /** Draws all world objects in the correct render order. */
+    drawWorldObjects() {
+        const { level, character } = this.world;
         this.addObjectsToMap(level.backgroundObjects);
         this.addObjectsToMap(level.clouds);
         this.addObjectsToMap(level.enemies);
@@ -94,8 +101,6 @@ export class WorldRendering {
         this.filterAndDrawThrowables();
         this.drawCharacterShadow();
         this.addToMap(character);
-        ctx.translate(-camera_x, 0);
-        this.drawHud();
     }
 
     /** Draws knockout stars above every currently stunned ChickenSmall. */
@@ -132,6 +137,19 @@ export class WorldRendering {
         ctx.save();
         ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
         ctx.beginPath();
+        this.drawShadowEllipse(ctx, character, groundY, scale);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    /**
+     * Draws the ellipse shape for the character shadow.
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {Character} character - The player character.
+     * @param {number} groundY - The y position of the ground.
+     * @param {number} scale - Scale factor based on jump height.
+     */
+    drawShadowEllipse(ctx, character, groundY, scale) {
         ctx.ellipse(
             character.x + character.width / 2,
             groundY,
@@ -141,8 +159,6 @@ export class WorldRendering {
             0,
             Math.PI * 2,
         );
-        ctx.fill();
-        ctx.restore();
     }
     // #endregion
 
@@ -171,9 +187,19 @@ export class WorldRendering {
     drawKnockoutStars(enemy) {
         const { ctx } = this.world;
         const time = new Date().getTime();
-        const timePassed = time - enemy.knockedOutTime;
-        if (timePassed > enemy.knockedOutDuration) return;
+        if (time - enemy.knockedOutTime > enemy.knockedOutDuration) return;
         ctx.save();
+        this.drawStarOrbit(ctx, enemy, time);
+        ctx.restore();
+    }
+
+    /**
+     * Draws three stars orbiting around the knocked-out enemy.
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {ChickenSmall} enemy - The stunned chicken.
+     * @param {number} time - Current timestamp in ms.
+     */
+    drawStarOrbit(ctx, enemy, time) {
         for (let i = 0; i < 3; i++) {
             const angle = time / 200 + i * 2.09;
             const starX = enemy.x + enemy.width / 2 + Math.cos(angle) * 20;
@@ -181,7 +207,6 @@ export class WorldRendering {
             ctx.font = "16px Arial";
             ctx.fillText("⭐", starX, starY);
         }
-        ctx.restore();
     }
     // #endregion
 }

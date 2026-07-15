@@ -46,10 +46,15 @@ export class ThrowableObject extends MovableObject {
         this.x = x;
         this.y = y;
         this.otherDirection = otherDirection;
+        this.loadBottleImages();
+        this.throw();
+    }
+
+    /** Loads all rotation and splash animation images. */
+    loadBottleImages() {
         this.loadImage(IMAGES_ROTATION[0]);
         this.loadImages(IMAGES_ROTATION);
         this.loadImages(IMAGES_SPLASH);
-        this.throw();
     }
     // #endregion
 

@@ -83,10 +83,20 @@ export class Endboss extends MovableObject {
     // #region Logic
     /** Registers movement and animation intervals via IntervalHub. */
     animate() {
+        this.startMoveInterval();
+        this.startAnimInterval();
+    }
+
+    /** Starts the 60 fps movement update interval. */
+    startMoveInterval() {
         this.moveIntervalId = IntervalHub.startInterval(
             () => this.handleMovement(),
             1000 / 60,
         );
+    }
+
+    /** Starts the 8 fps animation frame interval. */
+    startAnimInterval() {
         this.animIntervalId = IntervalHub.startInterval(
             () => this.handleAnimation(),
             1000 / 8,
@@ -99,7 +109,14 @@ export class Endboss extends MovableObject {
      */
     handleMovement() {
         if (!this.hadFirstContact || this.isDead() || !this.world) return;
-        const characterX = this.world.character.x;
+        this.moveTowardsCharacter(this.world.character.x);
+    }
+
+    /**
+     * Moves the boss left or right depending on character position.
+     * @param {number} characterX - The character's current x position.
+     */
+    moveTowardsCharacter(characterX) {
         if (characterX < this.x - 5) {
             this.x -= this.speed;
             this.otherDirection = false;
@@ -120,14 +137,13 @@ export class Endboss extends MovableObject {
             this.startDyingSequence();
             return;
         }
-        if (this.isHurt()) {
-            this.playAnimation(IMAGES_HURT);
-            return;
-        }
-        if (this.hadFirstContact) {
-            this.playAnimation(IMAGES_ATTACK);
-            return;
-        }
+        this.playPhaseAnimation();
+    }
+
+    /** Plays hurt, attack or alert animation based on current state. */
+    playPhaseAnimation() {
+        if (this.isHurt()) return this.playAnimation(IMAGES_HURT);
+        if (this.hadFirstContact) return this.playAnimation(IMAGES_ATTACK);
         this.playAnimation(IMAGES_ALERT);
     }
 
