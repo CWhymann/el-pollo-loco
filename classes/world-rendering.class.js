@@ -1,5 +1,5 @@
 import { ChickenSmall } from "./chicken-small.class.js";
-
+import { IntervalHub } from "./interval-hub.class.js";
 /**
  * Handles all rendering and the main draw loop for the game world.
  */
@@ -53,6 +53,8 @@ export class WorldRendering {
     /** Renders the game-over screen and stops the bottle spawn interval. */
     drawGameOverScreen() {
         this.addToMap(this.world.gameOverScreen);
+        if (this.world.settingsDialogVisible)
+            this.addToMap(this.world.settingsDialog);
         if (this.world.spawnIntervalId)
             IntervalHub.stopInterval(this.world.spawnIntervalId);
         requestAnimationFrame(() => this.draw());

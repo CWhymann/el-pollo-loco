@@ -56,7 +56,7 @@ export class Endboss extends MovableObject {
     width = 250;
     height = 400;
     offset = { top: 60, bottom: 20, left: 40, right: 40 };
-    speed = 0.8;
+    speed = 1.8;
     energy = 25;
     hadFirstContact = false;
     otherDirection = false;

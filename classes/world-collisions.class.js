@@ -40,7 +40,7 @@ export class WorldCollisions {
     handleEnemyCollision(enemy) {
         if (this.isKnockoutHit(enemy)) this.applyKnockout(enemy);
         else if (this.isJumpKill(enemy)) enemy.hit();
-        else if (this.isCharacterHit(enemy)) this.applyCharacterDamage();
+        else if (this.isCharacterHit(enemy)) this.applyCharacterDamage(enemy);
     }
 
     /**
@@ -95,11 +95,28 @@ export class WorldCollisions {
         );
     }
 
-    /** Reduces character health, updates health bar and plays damage sound. */
-    applyCharacterDamage() {
-        this.world.character.hit();
+    /**
+     * Applies damage and knockback to the character based on the attacking enemy type.
+     * @param {MovableObject} enemy - The enemy causing the damage.
+     */
+    applyCharacterDamage(enemy) {
+        const damage = enemy instanceof Endboss ? 20 : 5;
+        this.world.character.energy -= damage;
+        if (this.world.character.energy < 0) this.world.character.energy = 0;
+        this.world.character.lastHit = new Date().getTime();
         this.world.healthBar.setPercentage(this.world.character.energy);
         this.world.audioManager.play("damage");
+        if (enemy instanceof Endboss) this.applyKnockback(enemy);
+    }
+
+    /**
+     * Pushes the character away from the endboss on contact.
+     * @param {Endboss} enemy - The endboss causing the knockback.
+     */
+    applyKnockback(enemy) {
+        const knockbackX = this.world.character.x < enemy.x ? -80 : 80;
+        this.world.character.x += knockbackX;
+        this.world.character.speedY = 10;
     }
 
     /** Checks each coin for a collision with the character and collects it. */
