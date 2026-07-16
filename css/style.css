@@ -286,52 +286,14 @@ canvas {
     object-fit: fill;
 }
 
-/* Hide mobile controls on desktop fullscreen (only display on mobile viewports) */
-#game-container:fullscreen #mobile-controls,
-#game-container:-webkit-full-screen #mobile-controls {
-    display: none;
-}
-
-@media (max-width: 900px) or (pointer: coarse) {
-    #game-container:fullscreen #mobile-controls,
-    #game-container:-webkit-full-screen #mobile-controls {
-        display: flex;
-    }
-}
 /* #endregion */
 
 /* #region Mobile Controls */
 #mobile-controls {
     display: none;
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    justify-content: space-between;
-    padding: 0 20px;
-}
-
-#mobile-controls button {
-    padding: 15px 25px;
-    font-size: 24px;
-    cursor: pointer;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 #rotate-screen {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: black;
-    color: white;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-    z-index: 999;
 }
 /* #endregion */

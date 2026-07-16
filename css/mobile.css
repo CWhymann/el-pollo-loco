@@ -1,5 +1,6 @@
 /* #region Portrait Rotate Hint */
-@media (max-width: 900px) and (orientation: portrait) {
+@media (pointer: coarse) and (orientation: portrait),
+       (max-width: 900px) and (orientation: portrait) {
     #rotate-screen {
         display: flex;
         position: fixed;
@@ -25,8 +26,10 @@
 }
 /* #endregion */
 
-/* #region Landscape Mobile Layout */
-@media (max-width: 900px) and (orientation: landscape) {
+/* #region Landscape – alle Touch-Geräte */
+@media (pointer: coarse) and (orientation: landscape),
+       (max-width: 900px) and (orientation: landscape) {
+
     body {
         padding: 0;
         overflow: hidden;
@@ -34,6 +37,7 @@
 
     #game-wrapper {
         padding: 0;
+        display: flex;
         justify-content: center;
         align-items: center;
         width: 100vw;
@@ -45,43 +49,49 @@
     }
 
     #game-container {
-        width: 100vw;
-        height: 100vh;
+        position: relative;
+        width: min(100vw, 150vh);
+        height: min(100vh, 66.67vw);
+        aspect-ratio: 3 / 2;
+        container-type: size;
     }
 
     #game-container canvas {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         object-fit: fill;
+        display: block;
     }
 
+    /* Mobile Controls */
     #mobile-controls {
         display: flex;
         position: absolute;
-        bottom: 10px;
+        bottom: 0;
         width: 100%;
-        padding: 0;
+        padding: 10px;
         z-index: 200;
+        justify-content: space-between;
     }
 
     .controls-left {
         display: flex;
         flex-direction: row;
-        gap: 8px;
-        padding-left: 12px;
+        gap: clamp(4px, 1vh, 12px);
+        padding-left: clamp(6px, 1vh, 12px);
     }
 
     .controls-right {
         display: flex;
         flex-direction: row;
-        gap: 8px;
-        padding-right: 12px;
+        gap: clamp(4px, 1vh, 12px);
+        padding-right: clamp(6px, 1vh, 12px);
     }
 
     #mobile-controls button {
-        width: 45px;
-        height: 45px;
-        font-size: 22px;
+        width: clamp(44px, 6vh, 72px);
+        height: clamp(44px, 6vh, 72px);
+        font-size: clamp(18px, 3vh, 32px);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -92,8 +102,10 @@
         user-select: none;
         touch-action: none;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
     }
 
+    /* UI Buttons */
     #ui-buttons {
         position: absolute;
         right: 10px;
@@ -101,20 +113,37 @@
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: clamp(4px, 1vh, 8px);
         bottom: auto;
     }
 
     #mute-button,
     #settings-button,
     #fullscreen-button {
-        padding: 6px 8px;
-        font-size: 16px;
+        padding: clamp(4px, 1vh, 8px) clamp(6px, 1.5vh, 10px);
+        font-size: clamp(14px, 2.5vh, 24px);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
     }
 
+    /* Restart / Back to Start */
     #game-ui {
         top: 4px;
         right: 4px;
         gap: 4px;
     }
+
+    #game-ui .splash-button {
+        font-size: clamp(12px, 2vh, 20px);
+        padding: clamp(4px, 1vh, 8px) clamp(6px, 1.5vh, 12px);
+    }
+
+    /* Fullscreen Mobile Controls */
+    #game-container:fullscreen #mobile-controls,
+    #game-container:-webkit-full-screen #mobile-controls {
+        display: flex;
+    }
 }
+/* #endregion */
