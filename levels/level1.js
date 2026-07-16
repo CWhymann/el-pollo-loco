@@ -26,9 +26,11 @@ function createEnemies() {
         new Chicken(700),
         new Chicken(1100),
         new Chicken(1500),
+        new Chicken(1900),
         new ChickenSmall(800),
         new ChickenSmall(1200),
         new ChickenSmall(1600),
+        new ChickenSmall(2000),
         new Endboss(),
     ];
 }
@@ -61,6 +63,8 @@ function createBottles() {
         new Bottle(800, 380),
         new Bottle(1100, 380),
         new Bottle(1400, 380),
+        new Bottle(1700, 380),
+        new Bottle(2000, 380),
     ];
 }
 
